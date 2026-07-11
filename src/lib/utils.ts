@@ -61,6 +61,11 @@ export function formatDateLong(date: Date | null): string {
   return date.toLocaleDateString('de-CH', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
+export function formatDateTimeLong(date: Date | null): string {
+  if (!date) return ''
+  return date.toLocaleDateString('de-CH', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
 export function formatTimeHM(date: Date | null): string {
   if (!date) return ''
   return date.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })

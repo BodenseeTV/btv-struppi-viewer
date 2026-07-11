@@ -64,7 +64,7 @@ export function BroadcastsPage() {
       })
       if (scrollElement) {
         setTimeout(() => {
-          scrollElement.scrollIntoView({ behavior: "smooth", block: "start" })
+          scrollElement.scrollIntoView({ behavior: "smooth", block: "center" })
         }, 100)
       }
     }
