@@ -1,3 +1,13 @@
+<table>
+    <tr>
+        <td>
+            <h2>⚠️ Attention ⚠️</h2>
+            <h1>AI Generated Code (also known as slop)</h1>
+            <p>The code in this repository was almost completely AI generated and does not guarantee any kind of following best practises.</p>
+        </td>
+    </tr>
+</table>
+
 # StruPPI Viewer
 
 Ein interaktiver Web-Viewer für StruPPI (Struktur für ProgrammPresseInformation) XML-Dateien nach dem Standard von [struppi.tv](https://www.struppi.tv/).
