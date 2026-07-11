@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://struppi.tv/xsd/" xmlns="http://struppi.tv/xsd/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<!--
+    #                                                                                  #
+    # Struktur für ProgrammPresseInformationen - StruPPI Vers. 1.0.12 Stand 03.12.2021 #
+    # 				                                                                   #
+    This XSD is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Der Name "StruPPI - Struktur für ProgrammPresseInformationen" ist Trademark der Heinrich Bauer Zeitschriften Verlag KG, Hamburg. Alle Rechte vorbehalten.
+
+    Ansprechpartner:
+    media-press.tv (PPS) GmbH
+    mailto:info@struppi.tv
+
+    Lützowstraße 102-104
+    10785 Berlin
+    Amtsgericht Charlottenburg / HRB 30334
+    Geschäftsführer: Milosz Cechnicki, Anna Ottlik
+
+    //-->
+	<xsd:element name="programmdaten">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="lieferant" type="serviceComplexType"/>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="erweiterungen" type="erweiterungenComplexType"/>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="sender" type="senderComplexType"/>
+			</xsd:sequence>
+			<xsd:attribute name="generierungsdatum" type="xsd:dateTime" use="required"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="erweiterungenComplexType">
+		<xsd:annotation>
+			<xsd:documentation>Geplant für VideoOnDemand, DVDs, Downloads etc.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:complexType>
+	<xsd:complexType name="senderComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="showview">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element minOccurs="0" name="land" type="landComplexType"/>
+					</xsd:sequence>
+					<xsd:attribute name="kanal" type="xsd:unsignedShort" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="url" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="senderlogo" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="gruppe" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="presselounge" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" name="ablauf" type="ablaufComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="sender_ID" type="xsd:string"/>
+		<xsd:attribute name="NIT" type="xsd:string"/>
+		<xsd:attribute name="LCN" type="xsd:string"/>
+		<xsd:attribute name="sendername" type="xsd:string" use="required"/>
+		<xsd:attribute name="senderkuerzel" type="xsd:string"/>
+		<xsd:attribute name="senderkategorie" type="senderkategorieSimpleType"/>
+		<xsd:attribute name="vps" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="sprache" type="xsd:language"/>
+		<xsd:attribute name="empfang" type="xsd:string"/>
+		<xsd:attribute name="kontaktdaten" type="xsd:string"/>
+		<xsd:attribute name="sonstige_senderinfos" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="ablaufComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="plattform" type="serviceComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="stream" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" name="sendung" type="sendungComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="ablauftyp" type="ablauftypSimpleType" use="required"/>
+		<xsd:attribute name="ablaufstart" type="xsd:dateTime" use="required"/>
+		<xsd:attribute name="ablaufende" type="xsd:dateTime" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="sendungComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="externe_id" type="externe_idComplexType"/>
+			<xsd:element name="termin" type="terminComplexType"/>
+			<xsd:element name="titel" type="titelComplexType"/>
+			<xsd:element name="infos" type="infosComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="auszeichnung" type="auszeichnungComplexType"/>
+			<xsd:element minOccurs="0" name="mitwirkende" type="mitwirkungComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="text" type="textComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="medium" type="mediumComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="sendung_id" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="externe_idComplexType">
+		<xsd:attribute name="externe_id" type="xsd:string" use="required"/>
+		<xsd:attribute name="quelle" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+	<xsd:complexType name="terminComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="externe_id" type="externe_idComplexType"/>
+			<xsd:element minOccurs="0" name="vps" type="vpsComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="terminrechte" type="terminrechteComplexType"/>
+			<xsd:element minOccurs="0" name="terminart" type="terminartComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="wiederholung" type="wiederholungComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="termintyp" type="termintypSimpleType" use="required"/>
+		<xsd:attribute name="termin_id" type="xsd:string" use="required"/>
+		<xsd:attribute name="reihenfolge" type="xsd:unsignedShort" use="required"/>
+		<xsd:attribute name="start" type="xsd:dateTime" use="required"/>
+		<xsd:attribute name="exakt" type="xsd:dateTime"/>
+		<xsd:attribute name="exaktende" type="xsd:dateTime"/>
+		<xsd:attribute name="circa" type="xsd:boolean"/>
+		<xsd:attribute name="ende" type="xsd:dateTime" use="required"/>
+		<xsd:attribute name="programmtag" type="xsd:date"/>
+		<xsd:attribute name="nettolaenge" type="xsd:unsignedShort"/>
+		<xsd:attribute name="showview" type="xsd:string"/>
+		<xsd:attribute name="vorprogramm" type="xsd:boolean"/>
+		<xsd:attribute name="ersatzprogramm" type="xsd:boolean"/>
+		<xsd:attribute name="bestellnummer" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="vpsComplexType">
+		<xsd:attribute name="datum_zeit" type="xsd:dateTime" use="required"/>
+		<xsd:attribute name="showview_vps" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="terminrechteComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="wert" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="bedingung" type="terminrechteBedingungComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="rechteart" type="xsd:string"/>
+		<xsd:attribute name="provider" type="xsd:string"/>
+		<xsd:attribute name="erlaubt" type="xsd:boolean"/>
+		<xsd:attribute name="wert" type="xsd:integer"/>
+		<xsd:attribute name="einheit" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="terminrechteBedingungComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="wert" type="xsd:string"/>
+		</xsd:sequence>
+		<xsd:attribute name="operator" type="xsd:string"/>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="reihenfolge" type="xsd:unsignedShort" use="required"/>
+		<xsd:attribute name="erlaubt" type="xsd:boolean"/>
+		<xsd:attribute name="wert" type="xsd:integer"/>
+		<xsd:attribute name="einheit" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="terminartComplexType">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" name="klammer" type="klammerComplexType"/>
+			<xsd:element minOccurs="0" name="sonderzeit" type="sonderzeitComplexType"/>
+			<xsd:element minOccurs="0" name="alternativ" type="alternativComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="klammer_id" type="xsd:string"/>
+		<xsd:attribute name="regional" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="klammerComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" name="unter_id" type="xsd:string"/>
+		</xsd:sequence>
+		<xsd:attribute name="inhalt" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="anzahl" type="xsd:unsignedShort" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="sonderzeitComplexType">
+		<xsd:attribute name="zeitbezug" type="zeitbezugSimpleType" use="required"/>
+		<xsd:attribute name="bezugid" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	<xsd:simpleType name="zeitbezugSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="dazwischen"/>
+			<xsd:enumeration value="anschließend"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="alternativComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="alternativ_id" type="xsd:string"/>
+		</xsd:sequence>
+		<xsd:attribute name="alternativ" type="xsd:boolean" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="wiederholungComplexType">
+		<xsd:attribute name="datum" type="xsd:date"/>
+		<xsd:attribute name="zeit" type="xsd:time"/>
+		<xsd:attribute name="sender" type="xsd:string"/>
+		<xsd:attribute name="bezugID" type="xsd:string"/>
+		<xsd:attribute name="erstausstrahlung" type="xsd:boolean"/>
+		<xsd:attribute name="infotext" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="titelComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="alias" type="aliasComplexType"/>
+			<xsd:choice minOccurs="0">
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="themen" type="themenComplextype"/>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="episoden" type="episodeComplexType"/>
+			</xsd:choice>
+		</xsd:sequence>
+		<xsd:attribute name="termintitel" type="xsd:string" use="required"/>
+		<xsd:attribute name="titelzusatz" type="xsd:string"/>
+		<xsd:attribute name="sprache" type="xsd:language"/>
+	</xsd:complexType>
+	<xsd:complexType name="aliasComplexType">
+		<xsd:attribute name="aliastitel" type="xsd:string" use="required"/>
+		<xsd:attribute name="titelzusatz" type="xsd:string"/>
+		<xsd:attribute name="titelart" type="titelartSimpleType" use="required"/>
+		<xsd:attribute name="sprache" type="xsd:language"/>
+		<xsd:attribute name="titelreihenfolge" type="xsd:unsignedShort"/>
+	</xsd:complexType>
+	<xsd:complexType name="themenComplextype">
+		<xsd:attribute name="thementitel" type="xsd:string" use="required"/>
+		<xsd:attribute name="sprache_thementitel" type="xsd:language"/>
+		<xsd:attribute name="themenreihenfolge" type="xsd:unsignedShort" use="required"/>
+		<xsd:attribute name="thementext" type="xsd:string"/>
+		<xsd:attribute name="sprache_thementext" type="xsd:language"/>
+	</xsd:complexType>
+	<xsd:complexType name="episodeComplexType">
+		<xsd:attribute name="episodentitel" type="xsd:string" use="required"/>
+		<xsd:attribute name="sprache_episodentitel" type="xsd:language"/>
+		<xsd:attribute name="episodenreihenfolge" type="xsd:unsignedShort" use="required"/>
+		<xsd:attribute name="episodenoriginaltitel" type="xsd:string"/>
+		<xsd:attribute name="sprache_episodenoriginaltitel" type="xsd:language"/>
+		<xsd:attribute name="episodentext" type="xsd:string"/>
+		<xsd:attribute name="sprache_episodentext" type="xsd:language"/>
+	</xsd:complexType>
+	<xsd:complexType name="infosComplexType">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" name="altersangaben" type="altersangabenComplexType"/>
+			<xsd:element maxOccurs="3" minOccurs="0" name="produktion" type="produktionComplexType"/>
+			<xsd:element maxOccurs="3" minOccurs="0" name="erstausstrahlung" type="erstausstrahlungComplexType"/>
+			<xsd:element minOccurs="1" name="klassifizierung" type="klassifizierungComplexType"/>
+			<xsd:element minOccurs="0" name="originallaenge" type="originallaengeComplexType"/>
+			<xsd:element minOccurs="0" name="veranstaltung" type="ortComplexType"/>
+			<xsd:element minOccurs="0" name="sonderzeichen" type="sonderzeichenComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="sprache" type="xsd:language"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="untertitelung" type="xsd:language"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="teletext" type="teletextComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="tipp" type="tippComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="bewertung" type="bewertungComplexType"/>
+			<xsd:element minOccurs="0" name="folge" type="folgenangabenComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="url" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="download" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="onlinearchiv" type="onlinearchivComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="kinostart" type="xsd:date"/>
+		<xsd:attribute name="DVD_veroeffentlichung" type="xsd:date"/>
+		<xsd:attribute name="zusatzinfo" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="produktionComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="produktionsland" type="landComplexType"/>
+			<xsd:element minOccurs="0" name="produktionszeitraum" type="zeitraumComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="produktionsort" type="ortComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute default="sendung" name="gueltigkeit" type="gueltigkeitSimpleType"/>
+		<xsd:attribute name="europaeischeproduktion" type="xsd:boolean"/>
+	</xsd:complexType>
+	<xsd:complexType name="erstausstrahlungComplexType">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" name="erstausstrahlungzeitraum" type="zeitraumComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute default="sendung" name="gueltigkeit" type="gueltigkeitSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="zeitraumComplexType">
+		<xsd:choice>
+			<xsd:element name="jahr">
+				<xsd:complexType>
+					<xsd:attribute name="von" type="xsd:gYear" use="required"/>
+					<xsd:attribute name="bis" type="xsd:gYear"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element minOccurs="0" name="jahrspezial" type="xsd:string"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="klassifizierungComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="genre" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="schlagwort" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="dvbsigenre" type="dvbsigenreComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="formatgruppe" type="formatgruppeSimpleType" use="required"/>
+		<xsd:attribute name="kategorie" type="xsd:string"/>
+		<xsd:attribute name="hauptgenre" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="dvbsigenreComplexType">
+		<xsd:attribute name="dvbsi_Content_nibble_level1" type="xsd:string"/>
+		<xsd:attribute name="dvbsi_Content_nibble_level2" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="originallaengeComplexType">
+		<xsd:attribute name="kino" type="xsd:positiveInteger"/>
+		<xsd:attribute name="vhs" type="xsd:positiveInteger"/>
+		<xsd:attribute name="dvd" type="xsd:positiveInteger"/>
+		<xsd:attribute name="tv-premiere" type="xsd:positiveInteger"/>
+	</xsd:complexType>
+	<xsd:complexType name="sonderzeichenComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="ton" type="sdz_tonComplexType"/>
+			<xsd:element minOccurs="0" name="dolby" type="sdz_dolbyComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="bild" type="sdz_bildComplexType"/>
+			<xsd:element minOccurs="0" name="hd" type="sdz_hdComplexType"/>
+			<xsd:element minOccurs="0" name="uhd" type="sdz_uhdComplexType"/>
+			<xsd:element minOccurs="0" name="bildverhaeltnis" type="sdz_bildverhaeltnisComplexType"/>
+			<xsd:element minOccurs="0" name="premiere" type="sdz_premiereComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="termin" type="sdz_terminComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="sonstige" type="sdz_sonstigeComplexType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_tonComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="art" use="required">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Stummfilm"/>
+					<xsd:enumeration value="Mono"/>
+					<xsd:enumeration value="neuvertont"/>
+					<xsd:enumeration value="restauriert"/>
+					<xsd:enumeration value="OmU"/>
+					<xsd:enumeration value="Stereo"/>
+					<xsd:enumeration value="Mehrkanal"/>
+					<xsd:enumeration value="Audiodescription"/>
+					<xsd:enumeration value="Surroundsound"/>
+					<xsd:enumeration value="Synchronfassung"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_dolbyComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="version" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_bildComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="art" use="required">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="schwarzweiß"/>
+					<xsd:enumeration value="teilweise schwarzweiß"/>
+					<xsd:enumeration value="restauriert"/>
+					<xsd:enumeration value="viragiert"/>
+					<xsd:enumeration value="coloriert"/>
+					<xsd:enumeration value="dreidimensional"/>
+					<xsd:enumeration value="d2mac"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_hdComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="aufloesung" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_uhdComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="aufloesung" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_bildverhaeltnisComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="verhaeltnis" type="xsd:string" use="required"/>
+		<xsd:attribute name="anamorph" type="xsd:boolean"/>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_premiereComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="art" use="required">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Premiere"/>
+					<xsd:enumeration value="Free-TV-Premiere"/>
+					<xsd:enumeration value="Deutschlandpremiere"/>
+					<xsd:enumeration value="Weltpremiere"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_terminComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="art" use="required">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Live"/>
+					<xsd:enumeration value="Zeitversetzt"/>
+					<xsd:enumeration value="Neu"/>
+					<xsd:enumeration value="Letzte Ausstrahlung"/>
+					<xsd:enumeration value="Jugendschutz Vorsperre"/>
+					<xsd:enumeration value="Verschlüsselt"/>
+					<xsd:enumeration value="Unverschlüsselt"/>
+					<xsd:enumeration value="Jubiläum"/>
+					<xsd:enumeration value="Interaktiv"/>
+					<xsd:enumeration value="Gebärdensprache"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="sdz_sonstigeComplexType">
+		<xsd:attribute name="vorhanden" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="art" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="teletextComplexType">
+		<xsd:attribute name="tafel" type="xsd:positiveInteger"/>
+		<xsd:attribute name="beschreibung" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="tippComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="text" type="textComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="art" type="xsd:string" use="required"/>
+		<xsd:attribute name="quelle" type="xsd:string" use="required"/>
+		<xsd:attribute name="genre" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="bewertungComplexType">
+		<xsd:attribute name="kategorie" type="xsd:string" use="required"/>
+		<xsd:attribute name="hoehe" use="required">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:pattern value="[0-9]{1}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="quelle" type="xsd:string" use="required"/>
+		<xsd:attribute name="highlight" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="folgenangabenComplexType">
+		<xsd:attribute name="folgennummer" type="xsd:unsignedShort"/>
+		<xsd:attribute name="teil" type="xsd:unsignedShort"/>
+		<xsd:attribute name="folgenanzahl" type="xsd:unsignedShort"/>
+		<xsd:attribute name="folgengesamtanzahl" type="xsd:unsignedShort"/>
+		<xsd:attribute name="staffelfolgennummer" type="xsd:unsignedShort"/>
+		<xsd:attribute name="staffel" type="xsd:unsignedShort"/>
+		<xsd:attribute name="staffelanzahl" type="xsd:unsignedShort"/>
+		<xsd:attribute name="staffel_ID" type="xsd:string"/>
+		<xsd:attribute name="ausstrahlungsinfo" type="xsd:string"/>
+		<xsd:attribute name="serien_ID" type="xsd:string"/>
+		<xsd:attribute name="start" type="xsd:boolean"/>
+		<xsd:attribute name="letzte_folge" type="xsd:boolean"/>
+	</xsd:complexType>
+	<xsd:complexType name="onlinearchivComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="url" type="linkComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="verfuegbar" type="xsd:boolean" use="required"/>
+		<xsd:attribute name="verfuegbar_von" type="xsd:dateTime"/>
+		<xsd:attribute name="verfuegbar_bis" type="xsd:dateTime"/>
+		<xsd:attribute name="info" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="auszeichnungComplexType">
+		<xsd:attribute name="jahr" type="xsd:gYear"/>
+		<xsd:attribute name="veranstalter" type="xsd:string"/>
+		<xsd:attribute name="bezeichnung" type="xsd:string"/>
+		<xsd:attribute name="kategorie" type="xsd:string"/>
+		<xsd:attribute name="nominierung" type="xsd:boolean"/>
+		<xsd:attribute name="hinweis" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="mitwirkungComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" name="mitwirkender" type="mitwirkenderComplexType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="mitwirkenderComplexType">
+		<xsd:sequence>
+			<xsd:element name="mitwirkendentyp" type="mitwirkendertypComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="texte" type="textComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="auszeichnung" type="auszeichnungComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="medium" type="mediumComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="url" type="linkComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="funktion" type="mitwirkende_funktionSimpleType" use="required"/>
+		<xsd:attribute name="reihenfolge" type="xsd:unsignedShort" use="required"/>
+		<xsd:attribute name="rolle" type="xsd:string"/>
+		<xsd:attribute name="themenreihenfolge" type="xsd:unsignedShort"/>
+		<xsd:attribute name="episodenreihenfolge" type="xsd:unsignedShort"/>
+		<xsd:attribute default="sendung" name="gueltigkeit" type="gueltigkeitSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="mitwirkendertypComplexType">
+		<xsd:choice>
+			<xsd:element name="person" type="personComplexType"/>
+			<xsd:element name="gruppe" type="gruppeComplexType"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="personComplexType">
+		<xsd:sequence>
+			<xsd:element name="name" type="personennameComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="aliasname" type="personennameComplexType"/>
+			<xsd:element minOccurs="0" name="geburtsname" type="personennameComplexType"/>
+			<xsd:element minOccurs="0" name="geburtsland" type="landComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="gruppenmitglied" type="gruppenmitgliedComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="person_id" type="xsd:string"/>
+		<xsd:attribute name="geschlecht" type="geschlechtSimpleType" use="required"/>
+		<xsd:attribute name="geburtsdatum" type="datum_oder_jahrSimpleType"/>
+		<xsd:attribute name="geburtsstadt" type="xsd:string"/>
+		<xsd:attribute name="todesdatum" type="datum_oder_jahrSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="gruppeComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="aliasname" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="mitglieder" type="mitgliederComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="gruppen_id" type="xsd:string"/>
+		<xsd:attribute name="gruendung" type="datum_oder_jahrSimpleType"/>
+		<xsd:attribute name="aufloesung" type="datum_oder_jahrSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="gruppenmitgliedComplexType">
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="von" type="datum_oder_jahrSimpleType"/>
+		<xsd:attribute name="bis" type="datum_oder_jahrSimpleType"/>
+		<xsd:attribute name="gruppen_id" type="xsd:string"/>
+		<xsd:attribute name="funktion" type="mitwirkende_funktionSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="mitgliederComplexType">
+		<xsd:sequence>
+			<xsd:element name="name" type="personennameComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="person_id" type="xsd:string"/>
+		<xsd:attribute name="von" type="datum_oder_jahrSimpleType"/>
+		<xsd:attribute name="bis" type="datum_oder_jahrSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="mediumComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" name="quelle" type="quelleComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="schlagwort" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="freigabe" type="mediumfreigabeComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="url" type="linkComplexType"/>
+			<xsd:element minOccurs="0" name="altersangabe" type="altersangabenComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="untertitelung" type="xsd:language"/>
+			<xsd:element name="mediumtyp" type="mediumtypComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="dateiname" type="xsd:string" use="required"/>
+		<xsd:attribute name="medium_id" type="xsd:string"/>
+		<xsd:attribute name="dateigroesse" type="xsd:decimal"/>
+		<xsd:attribute name="reihenfolge" type="xsd:unsignedShort"/>
+		<xsd:attribute name="titel" type="xsd:string"/>
+		<xsd:attribute name="beschreibung" type="xsd:string"/>
+		<xsd:attribute name="sprache" type="xsd:language"/>
+		<xsd:attribute default="sendung" name="gueltigkeit" type="gueltigkeitSimpleType"/>
+		<xsd:attribute name="letzte_aenderung" type="datum_oder_datumzeitSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="quelleComplexType">
+		<xsd:attribute name="quelle" type="xsd:string" use="required"/>
+		<xsd:attribute name="copyright" type="xsd:string"/>
+		<xsd:attribute name="quelltext" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="mediumfreigabeComplexType">
+		<xsd:attribute name="freigabeart" type="xsd:string"/>
+		<xsd:attribute name="nutzung_von" type="datum_oder_datumzeitSimpleType"/>
+		<xsd:attribute name="nutzung_bis" type="datum_oder_datumzeitSimpleType"/>
+		<xsd:attribute name="veroeffentlichungshinweis" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="mediumtypComplexType">
+		<xsd:choice>
+			<xsd:element name="textmaterial" type="textmaterialComplexType"/>
+			<xsd:element name="bildmaterial" type="bildmaterialComplexType"/>
+			<xsd:element name="filmmaterial" type="filmmaterialComplexType"/>
+			<xsd:element name="tonmaterial" type="tonmaterialComplexType"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="serviceComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="url" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="logo" type="linkComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="presselounge" type="linkComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:string"/>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="kuerzel" type="xsd:string"/>
+		<xsd:attribute name="sprache" type="xsd:language"/>
+		<xsd:attribute name="copyright" type="xsd:string"/>
+		<xsd:attribute name="kostenpflicht" type="xsd:boolean"/>
+		<xsd:attribute name="kosteninfos" type="xsd:string"/>
+		<xsd:attribute name="kontaktdaten" type="xsd:string"/>
+		<xsd:attribute name="sonstige_infos" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="linkComplexType">
+		<xsd:attribute name="link" type="xsd:anyURI" use="required"/>
+		<xsd:attribute name="streamformat" type="streamformatSimpleType"/>
+		<xsd:attribute name="titel" type="xsd:string"/>
+		<xsd:attribute name="beschreibung" type="xsd:string"/>
+		<xsd:attribute name="verfuegbarkeit" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="altersangabenComplexType">
+		<xsd:attribute name="fsk" type="altersfreigabeSimpleType"/>
+		<xsd:attribute name="fsf" type="altersfreigabeSimpleType"/>
+		<xsd:attribute name="JK" type="xsd:boolean"/>
+		<xsd:attribute name="empfehlung">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:pattern value="[0-9]{1,2}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="landComplexType">
+		<xsd:attribute name="laendername" type="xsd:string" use="required"/>
+		<xsd:attribute name="laenderabkuerzung" type="xsd:string"/>
+		<xsd:attribute name="laender_id" type="xsd:string"/>
+		<xsd:attribute name="laenderschema" type="laenderschemaSimpleType"/>
+		<xsd:attribute name="laenderreihenfolge" type="xsd:unsignedShort"/>
+	</xsd:complexType>
+	<xsd:complexType name="ortComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="land" type="landComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="ort" type="xsd:string"/>
+		<xsd:attribute name="stadt" type="xsd:string"/>
+		<xsd:attribute name="info" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="personennameComplexType">
+		<xsd:attribute name="titel" type="xsd:string"/>
+		<xsd:attribute name="vorname" type="xsd:string"/>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="namensanhang" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="textComplexType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="textart" type="textartSimpleType" use="required"/>
+				<xsd:attribute name="quelle" type="xsd:string"/>
+				<xsd:attribute name="laenge" type="xsd:positiveInteger"/>
+				<xsd:attribute name="sprache" type="xsd:language"/>
+				<xsd:attribute name="erstellung" type="xsd:dateTime"/>
+				<xsd:attribute name="letzte_aenderung" type="xsd:dateTime"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="textmaterialComplexType">
+		<xsd:attribute name="dateiformat" type="dateiformat_textSimpleType"/>
+		<xsd:attribute name="textmaterialtyp" type="textmaterialtypSimpleType"/>
+	</xsd:complexType>
+	<xsd:complexType name="bildmaterialComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="person_id" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="gruppe_id" type="xsd:string"/>
+		</xsd:sequence>
+		<xsd:attribute name="dateiformat" type="dateiformat_bildSimpleType"/>
+		<xsd:attribute name="hoehe" type="xsd:integer"/>
+		<xsd:attribute name="breite" type="xsd:integer"/>
+		<xsd:attribute name="aufloesung" type="xsd:integer"/>
+		<xsd:attribute name="bildmaterialtyp" type="bildmaterialtypSimpleType"/>
+		<xsd:attribute name="bildunterschrift" type="xsd:string"/>
+		<xsd:attribute name="fotograf" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="filmmaterialComplexType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="person_id" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="gruppe_id" type="xsd:string"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="ton" type="sdz_tonComplexType"/>
+			<xsd:element minOccurs="0" name="dolby" type="sdz_dolbyComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="bild" type="sdz_bildComplexType"/>
+			<xsd:element minOccurs="0" name="hd" type="sdz_hdComplexType"/>
+			<xsd:element minOccurs="0" name="uhd" type="sdz_uhdComplexType"/>
+			<xsd:element minOccurs="0" name="bildverhaeltnis" type="sdz_bildverhaeltnisComplexType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="sonstige" type="sdz_sonstigeComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="dateiformat" type="dateiformat_bewegtbildSimpleType"/>
+		<xsd:attribute name="filmmaterialtyp" type="filmmaterialtypSimpleType"/>
+		<xsd:attribute name="laenge" type="xsd:positiveInteger"/>
+		<xsd:attribute name="hoehe" type="xsd:integer"/>
+		<xsd:attribute name="breite" type="xsd:integer"/>
+		<xsd:attribute name="fps" type="xsd:integer"/>
+	</xsd:complexType>
+	<xsd:complexType name="tonmaterialComplexType">
+		<xsd:sequence>
+			<xsd:element name="ton" type="sdz_tonComplexType"/>
+		</xsd:sequence>
+		<xsd:attribute name="dateiformat" type="dateiformat_tonSimpleType"/>
+		<xsd:attribute name="tonmaterialtyp" type="tonmaterialtypSimpleType"/>
+	</xsd:complexType>
+	<xsd:simpleType name="ablauftypSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ablauf"/>
+			<xsd:enumeration value="tvondemand"/>
+			<xsd:enumeration value="videoondemand"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="termintypSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="neu"/>
+			<xsd:enumeration value="loeschen"/>
+			<xsd:enumeration value="wiederherstellen"/>
+			<xsd:enumeration value="ergaenzen"/>
+			<xsd:enumeration value="zeitaenderung"/>
+			<xsd:enumeration value="zeitaenderung_ergaenzen"/>
+			<xsd:enumeration value="wie geplant"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="datum_oder_datumzeitSimpleType">
+		<xsd:union memberTypes="xsd:date xsd:dateTime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="datum_oder_jahrSimpleType">
+		<xsd:union memberTypes="xsd:gYear xsd:gYearMonth xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="senderkategorieSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Vollprogramm"/>
+			<xsd:enumeration value="Filme"/>
+			<xsd:enumeration value="Serie"/>
+			<xsd:enumeration value="Dokumentation/Reportage"/>
+			<xsd:enumeration value="News"/>
+			<xsd:enumeration value="Sport"/>
+			<xsd:enumeration value="Musik"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="formatgruppeSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Film"/>
+			<xsd:enumeration value="Serie"/>
+			<xsd:enumeration value="Buehne"/>
+			<xsd:enumeration value="Dokumentation/Reportage"/>
+			<xsd:enumeration value="Veranstaltung"/>
+			<xsd:enumeration value="Show/Unterhaltung"/>
+			<xsd:enumeration value="Magazin/Ratgeber"/>
+			<xsd:enumeration value="Information"/>
+			<xsd:enumeration value="Gespraech/Vortrag"/>
+			<xsd:enumeration value="Werbung"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="laenderschemaSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="pid"/>
+			<xsd:enumeration value="iso"/>
+			<xsd:enumeration value="kfz"/>
+			<xsd:enumeration value="andere"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="titelartSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="titel"/>
+			<xsd:enumeration value="untertitel"/>
+			<xsd:enumeration value="originaltitel"/>
+			<xsd:enumeration value="originaluntertitel"/>
+			<xsd:enumeration value="reihentitel"/>
+			<xsd:enumeration value="sendeplatztitel"/>
+			<xsd:enumeration value="sonstiger_titel"/>
+			<xsd:enumeration value="thementitel"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="textartSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Kurztext"/>
+			<xsd:enumeration value="Vorspann"/>
+			<xsd:enumeration value="Beschreibung"/>
+			<xsd:enumeration value="Allgemein"/>
+			<xsd:enumeration value="Hintergrund"/>
+			<xsd:enumeration value="Auszeichnung"/>
+			<xsd:enumeration value="Kritik"/>
+			<xsd:enumeration value="Highlight"/>
+			<xsd:enumeration value="Biographie"/>
+			<xsd:enumeration value="Werk"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="geschlechtSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="m"/>
+			<xsd:enumeration value="w"/>
+			<xsd:enumeration value="n"/>
+			<xsd:enumeration value="unbekannt"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="altersfreigabeSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Ohne Altersbeschränkung"/>
+			<xsd:enumeration value="ab 0"/>
+			<xsd:enumeration value="ab 6"/>
+			<xsd:enumeration value="ab 12"/>
+			<xsd:enumeration value="ab 16"/>
+			<xsd:enumeration value="ab 18"/>
+			<xsd:enumeration value="Keine Jugendfreigabe"/>
+			<xsd:enumeration value="Beantragt: Ohne Altersbeschränkung"/>
+			<xsd:enumeration value="Beantragt: ab 0"/>
+			<xsd:enumeration value="Beantragt: ab 6"/>
+			<xsd:enumeration value="Beantragt: ab 12"/>
+			<xsd:enumeration value="Beantragt: ab 16"/>
+			<xsd:enumeration value="Beantragt: ab 18"/>
+			<xsd:enumeration value="Unbekannt"/>
+			<xsd:enumeration value="Nicht vergeben"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="gueltigkeitSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="sendung"/>
+			<xsd:enumeration value="staffel"/>
+			<xsd:enumeration value="gesamt"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="mitwirkende_funktionSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Animation"/>
+			<xsd:enumeration value="Ausstattung"/>
+			<xsd:enumeration value="Autor"/>
+			<xsd:enumeration value="Bauten"/>
+			<xsd:enumeration value="Bearbeitung"/>
+			<xsd:enumeration value="Beteiligte Firmen"/>
+			<xsd:enumeration value="Bildregie"/>
+			<xsd:enumeration value="Buch"/>
+			<xsd:enumeration value="Cameoauftritt"/>
+			<xsd:enumeration value="Casting"/>
+			<xsd:enumeration value="Choreographie"/>
+			<xsd:enumeration value="Coach"/>
+			<xsd:enumeration value="Co-Kommentar"/>
+			<xsd:enumeration value="Co-Moderation"/>
+			<xsd:enumeration value="Darsteller"/>
+			<xsd:enumeration value="Dirigent"/>
+			<xsd:enumeration value="Drehbuch"/>
+			<xsd:enumeration value="Elektrik"/>
+			<xsd:enumeration value="Experte"/>
+			<xsd:enumeration value="Fernsehregie"/>
+			<xsd:enumeration value="Frisuren"/>
+			<xsd:enumeration value="Gast"/>
+			<xsd:enumeration value="Gastgeber"/>
+			<xsd:enumeration value="Gaststar"/>
+			<xsd:enumeration value="Herstellungsleitung"/>
+			<xsd:enumeration value="Inszenierung"/>
+			<xsd:enumeration value="Interpret"/>
+			<xsd:enumeration value="Jury"/>
+			<xsd:enumeration value="Kamera"/>
+			<xsd:enumeration value="Kandidat"/>
+			<xsd:enumeration value="Koch"/>
+			<xsd:enumeration value="Kommentar"/>
+			<xsd:enumeration value="Komponist"/>
+			<xsd:enumeration value="Kostüm"/>
+			<xsd:enumeration value="Librettist"/>
+			<xsd:enumeration value="Maske"/>
+			<xsd:enumeration value="Mitwirkende"/>
+			<xsd:enumeration value="Moderation"/>
+			<xsd:enumeration value="Musik"/>
+			<xsd:enumeration value="Musikalische Leitung"/>
+			<xsd:enumeration value="Originalstimme"/>
+			<xsd:enumeration value="Personenhinweise"/>
+			<xsd:enumeration value="Produktionsdesign"/>
+			<xsd:enumeration value="Produktionsfirma"/>
+			<xsd:enumeration value="Produktionsleitung"/>
+			<xsd:enumeration value="Produzent"/>
+			<xsd:enumeration value="Rateteam"/>
+			<xsd:enumeration value="Redaktion"/>
+			<xsd:enumeration value="Redner"/>
+			<xsd:enumeration value="Regie"/>
+			<xsd:enumeration value="Regie-Assistenz"/>
+			<xsd:enumeration value="Reporter"/>
+			<xsd:enumeration value="Schnitt"/>
+			<xsd:enumeration value="SFX Firmen"/>
+			<xsd:enumeration value="Solist"/>
+			<xsd:enumeration value="Sound-Mix"/>
+			<xsd:enumeration value="Spezialeffekte"/>
+			<xsd:enumeration value="Spezialpersonen"/>
+			<xsd:enumeration value="Sprecher"/>
+			<xsd:enumeration value="Stimme"/>
+			<xsd:enumeration value="Studio"/>
+			<xsd:enumeration value="Stunt"/>
+			<xsd:enumeration value="Szenen-/Bühnenbild"/>
+			<xsd:enumeration value="Team"/>
+			<xsd:enumeration value="Ton"/>
+			<xsd:enumeration value="Verantwortlich"/>
+			<xsd:enumeration value="Verleih"/>
+			<xsd:enumeration value="Vertrieb"/>
+			<xsd:enumeration value="Visuelle Effekte"/>
+			<xsd:enumeration value="Vorlage"/>
+			<xsd:enumeration value="Vorleser"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="textmaterialtypSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Presseheft"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="bildmaterialtypSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Logo"/>
+			<xsd:enumeration value="Titelschriftzug"/>
+			<xsd:enumeration value="Szenenbild"/>
+			<xsd:enumeration value="Gruppenbild"/>
+			<xsd:enumeration value="Standfoto"/>
+			<xsd:enumeration value="Plakatmotiv"/>
+			<xsd:enumeration value="Artwork"/>
+			<xsd:enumeration value="Aushangfoto"/>
+			<xsd:enumeration value="Making of"/>
+			<xsd:enumeration value="Doppelportrait"/>
+			<xsd:enumeration value="Portrait"/>
+			<xsd:enumeration value="Animationsportrait"/>
+			<xsd:enumeration value="MAZ-Bild"/>
+			<xsd:enumeration value="DVD Cover"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="filmmaterialtypSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Ausschnitte"/>
+			<xsd:enumeration value="Trailer"/>
+			<xsd:enumeration value="Teaser"/>
+			<xsd:enumeration value="Feature"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="tonmaterialtypSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="O-Ton"/>
+			<xsd:enumeration value="Interview"/>
+			<xsd:enumeration value="Sonstiges"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="streamformatSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ogg"/>
+			<xsd:enumeration value="avi"/>
+			<xsd:enumeration value="mpg"/>
+			<xsd:enumeration value="xvid"/>
+			<xsd:enumeration value="flv"/>
+			<xsd:enumeration value="rm"/>
+			<xsd:enumeration value="wmv"/>
+			<xsd:enumeration value="xap"/>
+			<xsd:enumeration value="mov"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dateiformat_textSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ods"/>
+			<xsd:enumeration value="xml"/>
+			<xsd:enumeration value="txt"/>
+			<xsd:enumeration value="rtf"/>
+			<xsd:enumeration value="pdf"/>
+			<xsd:enumeration value="doc"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dateiformat_bildSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="jpg"/>
+			<xsd:enumeration value="png"/>
+			<xsd:enumeration value="gif"/>
+			<xsd:enumeration value="tiff"/>
+			<xsd:enumeration value="eps"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dateiformat_bewegtbildSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ogg"/>
+			<xsd:enumeration value="avi"/>
+			<xsd:enumeration value="mpg"/>
+			<xsd:enumeration value="xvid"/>
+			<xsd:enumeration value="flv"/>
+			<xsd:enumeration value="rm"/>
+			<xsd:enumeration value="wmv"/>
+			<xsd:enumeration value="xap"/>
+			<xsd:enumeration value="mov"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dateiformat_tonSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ogg"/>
+			<xsd:enumeration value="mp3"/>
+			<xsd:enumeration value="wav"/>
+			<xsd:enumeration value="acc"/>
+			<xsd:enumeration value="flac"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>
