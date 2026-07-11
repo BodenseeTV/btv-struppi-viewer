@@ -36,7 +36,7 @@ function getAllChildren(el: Element, tagName: string): Element[] {
 // Core Parser Function
 // ============================================================================
 
-export async function parseStruPPIXml(xml: string): Promise<StruPPIParsed> {
+export function parseStruPPIXml(xml: string): StruPPIParsed {
   const parser = new DOMParser()
   const doc = parser.parseFromString(xml, 'application/xml')
 

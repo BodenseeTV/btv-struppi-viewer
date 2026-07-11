@@ -1,51 +1,80 @@
-import {Button} from "@/components/ui/button";
-import {Blocks} from "lucide-react";
-import * as React from "react";
+import { Button } from "@/components/ui/button"
+import { Blocks } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { useStruPPI } from "@/context/StruPPIContext"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
-interface NavbarProps {
-    sendername?: string;
-    logo?: React.ReactNode;
+function Navbar() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { data, currentSender, reset } = useStruPPI()
+
+  const isLoaded = !!data && !!currentSender
+
+  const navLinks = [
+    { name: "Sender", path: "/broadcaster" },
+    { name: "Sendungen", path: "/broadcasts" },
+    { name: "Serien", path: "/series" },
+  ]
+
+  const handleReset = () => {
+    reset()
+    navigate("/", { replace: true })
+  }
+
+  const generierungsdatum = data?.programmdaten?.generierungsdatum
+    ? new Date(data.programmdaten.generierungsdatum).toLocaleDateString("de-CH")
+    : null
+
+  return (
+    <nav className="py-4 px-6 flex items-center justify-between border-b">
+      <div
+        className="flex justify-center items-center gap-2 cursor-pointer"
+        onClick={() => (isLoaded ? navigate("/broadcaster") : navigate("/"))}
+      >
+        {isLoaded && currentSender?.senderlogo ? (
+          <ImageWithFallback
+            links={currentSender.senderlogo}
+            alt={currentSender.sendername}
+            size="sm"
+          />
+        ) : (
+          <Blocks size={30} />
+        )}
+        <div>
+          <h1 className="text-2xl font-bold">{currentSender?.sendername || "StruPPI Viewer"}</h1>
+          {generierungsdatum && (
+            <p className="text-xs text-muted-foreground">Generiert: {generierungsdatum}</p>
+          )}
+        </div>
+      </div>
+
+      {isLoaded && (
+        <div className="flex opacity-85 items-center text-sm text-muted-foreground space-x-8">
+          <div className="hidden md:flex space-x-4">
+            {navLinks.map((link) => (
+              <Button
+                key={link.name}
+                variant={location.pathname === link.path ? "default" : "ghost"}
+                onClick={() => navigate(link.path)}
+                className="text-sm"
+              >
+                {link.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center space-x-4">
+        {isLoaded && (
+          <Button className="h-10" variant="outline" onClick={handleReset}>
+            Neues XML
+          </Button>
+        )}
+      </div>
+    </nav>
+  )
 }
 
-function Navbar({
-                    sendername = "BodenseeTV",
-                    logo = <Blocks size={30}/>
-                }: NavbarProps) {
-
-    const navLinks = [
-        {name: "Senderinfos", href: "#"},
-        {name: "Sendungen", href: "#"},
-        {name: "Serien", href: "#"}
-    ]
-
-    return (
-        <nav className={`py-4 px-6 flex items-center justify-between`}>
-            <div className="flex justify-center items-center gap-2">
-                {logo}
-                <h1 className="text-2xl font-bold">{sendername}</h1>
-            </div>
-
-            <div className="flex opacity-85 items-center text-sm text-muted-foreground space-x-8">
-                <div className="hidden md:flex space-x-6">
-                    {navLinks.map((link) => (
-                        <a
-                            key={link.name}
-                            href={link.href}
-                            className="text-gray-200 hover:text-gray-500 font-medium transition-colors"
-                        >
-                            {link.name}
-                        </a>
-                    ))}
-                </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-                <Button className="h-10" variant="outline">
-                    StruPPI XML wechseln
-                </Button>
-            </div>
-        </nav>
-    );
-};
-
-export default Navbar;
+export default Navbar
