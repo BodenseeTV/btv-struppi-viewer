@@ -1,5 +1,5 @@
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { ChevronDownIcon, X, AlertCircle } from "lucide-react"
+import { ChevronDownIcon, Upload, AlertCircle, Sun, Moon } from "lucide-react"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import {
   DropdownMenu,
@@ -14,6 +14,8 @@ import { Field, FieldGroup } from "@/components/ui/field.tsx"
 import { parseStruPPIXml } from "@/parsers/struppiParser.ts"
 import { useStruPPI } from "@/context/StruPPIContext"
 import { useNavigate, useSearchParams } from "react-router-dom"
+import { LoadingOverlay } from "@/components/LoadingOverlay"
+import { useTheme } from "@/components/theme-provider"
 
 export function LoaderPage() {
   const [sourceType, setSourceType] = useState<"file" | "url">("url")
@@ -55,6 +57,11 @@ export function LoaderPage() {
         setSender(firstSender)
       }
       
+      // Update URL with query parameter
+      const params = new URLSearchParams()
+      params.set("url", url)
+      window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`)
+
       navigate("/broadcaster", { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load XML")
@@ -93,72 +100,91 @@ export function LoaderPage() {
     }
   }
 
+  function ThemeToggle() {
+    const { theme, setTheme } = useTheme()
+    return (
+      <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} variant="ghost">
+        {theme === 'dark' ? <Sun /> : <Moon />}
+      </Button>
+    )
+  }
+
   return (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          {error ? <AlertCircle className="text-red-500" /> : <X />}
-        </EmptyMedia>
-        <EmptyTitle>{error ? "Fehler beim Laden" : "StruPPI XML laden"}</EmptyTitle>
-        <EmptyDescription>
-          {error || "Bitte wähle ein StruPPI XML aus oder gebe eine URL ein"}
-        </EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent className="flex-row justify-center gap-2">
-        <FieldGroup>
-          <Field>
-            <InputGroup>
-              <InputGroupAddon align="inline-start">
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <InputGroupButton variant="ghost" className="pr-1.5! text-xs" disabled={isLoading}>
-                        {sourceType}
-                        <ChevronDownIcon className="size-3" />
-                      </InputGroupButton>
-                    }
+    <>
+      <LoadingOverlay isOpen={isLoading} message="XML wird geladen und geparst..." />
+      <Empty>
+        <EmptyHeader>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-4">
+              <EmptyMedia variant="icon">
+                {error ? <AlertCircle className="text-red-500" /> : <Upload />}
+              </EmptyMedia>
+              <div>
+                <EmptyTitle>{error ? "Fehler beim Laden" : "StruPPI XML laden"}</EmptyTitle>
+                <EmptyDescription>{error || "Bitte wähle ein StruPPI XML aus oder gebe eine URL ein"}</EmptyDescription>
+              </div>
+            </div>
+            <div className="ml-4">
+              <ThemeToggle />
+            </div>
+          </div>
+        </EmptyHeader>
+        <EmptyContent className="flex-row justify-center gap-2">
+          <FieldGroup>
+            <Field>
+              <InputGroup>
+                <InputGroupAddon align="inline-start">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <InputGroupButton variant="ghost" className="pr-1.5! text-xs" disabled={isLoading}>
+                          {sourceType}
+                          <ChevronDownIcon className="size-3" />
+                        </InputGroupButton>
+                      }
+                    />
+                    <DropdownMenuContent align="start" sideOffset={8} alignOffset={-4}>
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem onClick={() => setSourceType("file")}>
+                          Datei
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSourceType("url")}>
+                          URL
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </InputGroupAddon>
+                {sourceType === "url" ? (
+                  <InputGroupInput
+                    placeholder={"https://example.com/struppi.xml"}
+                    value={sourceUrl}
+                    onChange={(e) => setSourceUrl(e.target.value)}
+                    disabled={isLoading}
                   />
-                  <DropdownMenuContent align="start" sideOffset={8} alignOffset={-4}>
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem onClick={() => setSourceType("file")}>
-                        Datei
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSourceType("url")}>
-                        URL
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </InputGroupAddon>
-              {sourceType === "url" ? (
-                <InputGroupInput
-                  placeholder={"https://example.com/struppi.xml"}
-                  value={sourceUrl}
-                  onChange={(e) => setSourceUrl(e.target.value)}
-                  disabled={isLoading}
-                />
-              ) : (
-                <InputGroupInput
-                  type={"file"}
-                  accept=".xml"
-                  onChange={(e) => setFileInput(e.target.files?.[0] || null)}
-                  disabled={isLoading}
-                />
-              )}
-            </InputGroup>
-          </Field>
-          <Field orientation="vertical">
-            <Button
-              onClick={handleLoad}
-              type="submit"
-              disabled={isLoading || (!sourceUrl && sourceType === "url") || (!fileInput && sourceType === "file")}
-            >
-              {isLoading ? "Lädt..." : "StruPPI laden"}
-            </Button>
-          </Field>
-        </FieldGroup>
-      </EmptyContent>
-    </Empty>
+                ) : (
+                  <InputGroupInput
+                    type={"file"}
+                    accept=".xml"
+                    onChange={(e) => setFileInput(e.target.files?.[0] || null)}
+                    disabled={isLoading}
+                  />
+                )}
+              </InputGroup>
+            </Field>
+            <Field orientation="vertical">
+              <Button
+                onClick={handleLoad}
+                type="submit"
+                disabled={isLoading || (!sourceUrl && sourceType === "url") || (!fileInput && sourceType === "file")}
+              >
+                {isLoading ? "Lädt..." : "StruPPI laden"}
+              </Button>
+            </Field>
+          </FieldGroup>
+        </EmptyContent>
+      </Empty>
+    </>
   )
 }
 

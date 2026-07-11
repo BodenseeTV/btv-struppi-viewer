@@ -7,23 +7,26 @@ interface ImageWithFallbackProps {
   alt?: string
   className?: string
   size?: "sm" | "md" | "lg"
+  heightOnly?: boolean // Nur Höhe beschränken, nicht Breite
 }
 
-export function ImageWithFallback({ links, alt = "Image", className = "", size = "md" }: ImageWithFallbackProps) {
+export function ImageWithFallback({ links, alt = "Image", className = "", size = "md", heightOnly = false }: ImageWithFallbackProps) {
   const [hasError, setHasError] = useState(false)
 
   // Get the first available link
   const imageUrl = links?.[0]?.link
 
   const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-16 h-16",
-    lg: "w-32 h-32",
+    sm: heightOnly ? "h-8" : "w-8 h-8",
+    md: heightOnly ? "h-16" : "w-16 h-16",
+    lg: heightOnly ? "h-32" : "w-32 h-32",
   }
 
   if (!imageUrl || hasError) {
+    // show square placeholder when no image (good for logos)
+    const placeholderClasses = `${sizeClasses[size]} ${heightOnly ? 'w-auto' : ''}`
     return (
-      <div className={`flex items-center justify-center bg-muted rounded ${sizeClasses[size]} ${className}`}>
+      <div className={`flex items-center justify-center bg-muted rounded ${placeholderClasses} ${className} ${!imageUrl ? 'aspect-square' : ''}`}>
         <ImageOff className="w-1/2 h-1/2 text-muted-foreground" />
       </div>
     )
@@ -33,9 +36,8 @@ export function ImageWithFallback({ links, alt = "Image", className = "", size =
     <img
       src={imageUrl}
       alt={alt}
-      className={`rounded object-cover ${sizeClasses[size]} ${className}`}
+      className={`rounded object-contain ${sizeClasses[size]} ${className}`}
       onError={() => setHasError(true)}
     />
   )
 }
-

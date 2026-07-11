@@ -9,7 +9,7 @@ import { SeriesPage } from "@/pages/SeriesPage"
 export function App() {
   return (
     <StruPPIProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <Routes>
           {/* Loader/Initial page - no layout */}
           <Route path="/" element={<LoaderPage />} />

@@ -6,6 +6,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { AlertCircle } from "lucide-react"
 import type { Sendung } from "@/types/struppi"
 import { useState } from "react"
+import { parseDateTime, formatDateLong } from "@/lib/utils"
 
 interface SeriesInfo {
   seriesId: string
@@ -99,7 +100,7 @@ export function SeriesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Erste Ausstrahlung: {new Date(series.sendungen[0]?.termin.start).toLocaleDateString('de-CH')}
+                  Erste Ausstrahlung: {formatDateLong(parseDateTime(series.sendungen[0]?.termin.start) || null)}
                 </p>
               </CardContent>
             </Card>
@@ -146,7 +147,7 @@ function SeriesDetailModal({ series, onClose }: { series: SeriesInfo; onClose: (
                     {sendung.titel.termintitel}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(sendung.termin.start).toLocaleString('de-CH')}
+                    {formatDateLong(parseDateTime(sendung.termin.start) || null)}
                   </div>
                 </div>
               ))}

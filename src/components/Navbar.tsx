@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button"
-import { Blocks } from "lucide-react"
+import { Blocks, Sun, Moon } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useStruPPI } from "@/context/StruPPIContext"
 import { ImageWithFallback } from "@/components/ImageWithFallback"
+import { useTheme } from "@/components/theme-provider"
+import { parseDateTime, formatDateLong } from "@/lib/utils"
 
 function Navbar() {
   const navigate = useNavigate()
@@ -23,8 +25,14 @@ function Navbar() {
   }
 
   const generierungsdatum = data?.programmdaten?.generierungsdatum
-    ? new Date(data.programmdaten.generierungsdatum).toLocaleDateString("de-CH")
+    ? formatDateLong(parseDateTime(data.programmdaten.generierungsdatum) || null)
     : null
+
+  const { theme, setTheme } = useTheme()
+
+  function toggleTheme() {
+    setTheme(theme === 'dark' ? 'light' : 'dark')
+  }
 
   return (
     <nav className="py-4 px-6 flex items-center justify-between border-b">
@@ -36,7 +44,8 @@ function Navbar() {
           <ImageWithFallback
             links={currentSender.senderlogo}
             alt={currentSender.sendername}
-            size="sm"
+            size="md"
+            heightOnly
           />
         ) : (
           <Blocks size={30} />
@@ -67,6 +76,11 @@ function Navbar() {
       )}
 
       <div className="flex items-center space-x-4">
+        {/* Theme toggle */}
+        <Button onClick={toggleTheme} variant="ghost" className="h-10">
+          {theme === 'dark' ? <Sun /> : <Moon />}
+        </Button>
+
         {isLoaded && (
           <Button className="h-10" variant="outline" onClick={handleReset}>
             Neues XML

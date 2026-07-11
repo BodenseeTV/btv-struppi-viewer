@@ -35,11 +35,12 @@ export function BroadcasterPage() {
     <div className="space-y-8 py-8">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-4">
+          <CardTitle className="flex items-center gap-4 flex-wrap">
             <ImageWithFallback
               links={currentSender.senderlogo}
               alt={currentSender.sendername}
-              size="md"
+              size="lg"
+              heightOnly
             />
             {currentSender.sendername}
           </CardTitle>
