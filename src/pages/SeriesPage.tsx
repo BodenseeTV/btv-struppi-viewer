@@ -49,14 +49,15 @@ export function SeriesPage() {
     ablauf.sendung.forEach((sendung) => {
       const seriesId = sendung.infos?.folge?.serien_ID
       if (seriesId) {
-        if (!seriesMap.has(seriesId)) {
-          seriesMap.set(seriesId, {
-            seriesId,
-            seriesTitle: sendung.titel.termintitel,
-            sendungen: [],
-            folgenanzahl: sendung.infos?.folge?.folgenanzahl,
-            staffelanzahl: sendung.infos?.folge?.staffelanzahl,
-          })
+          if (!seriesMap.has(seriesId)) {
+            seriesMap.set(seriesId, {
+              seriesId,
+              // Use the series ID as primary label (more stable than episode title)
+              seriesTitle: seriesId,
+              sendungen: [],
+              folgenanzahl: sendung.infos?.folge?.folgenanzahl,
+              staffelanzahl: sendung.infos?.folge?.staffelanzahl,
+            })
         }
         seriesMap.get(seriesId)!.sendungen.push(sendung)
       }
@@ -92,7 +93,7 @@ export function SeriesPage() {
               onClick={() => setSelectedSeries(series)}
             >
               <CardHeader>
-                <CardTitle>{series.seriesTitle}</CardTitle>
+                <CardTitle>{series.seriesId}</CardTitle>
                 <CardDescription>
                   {series.sendungen.length} Episode(n)
                   {series.staffelanzahl && ` • ${series.staffelanzahl} Staffel(n)`}
@@ -121,9 +122,9 @@ export function SeriesPage() {
 function SeriesDetailModal({ series, onClose }: { series: SeriesInfo; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <CardHeader>
-          <CardTitle>{series.seriesTitle}</CardTitle>
+          <CardTitle>{series.seriesId}</CardTitle>
           <CardDescription>
             {series.sendungen.length} Episode(n)
             {series.staffelanzahl && ` • ${series.staffelanzahl} Staffel(n)`}

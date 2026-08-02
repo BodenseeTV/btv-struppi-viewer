@@ -23,6 +23,8 @@ export function LoaderPage() {
   const [fileInput, setFileInput] = useState<File | null>(null)
   const { setData, setSender, setIsLoading, setError, isLoading, error } = useStruPPI()
   const navigate = useNavigate()
+  const location = window.location
+  // Note: we intentionally use window.location here so the query param reflects the full pathname including any base.
   const [searchParams] = useSearchParams()
 
   // Check for URL parameter on mount
@@ -57,12 +59,9 @@ export function LoaderPage() {
         setSender(firstSender)
       }
       
-      // Update URL with query parameter
-      const params = new URLSearchParams()
-      params.set("url", url)
-      window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`)
-
-      navigate("/broadcaster", { replace: true })
+      // Update URL with query parameter and navigate to broadcaster
+      const encoded = encodeURIComponent(url)
+      navigate(`/broadcasts?url=${encoded}`, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load XML")
     } finally {
@@ -84,7 +83,8 @@ export function LoaderPage() {
         setSender(firstSender)
       }
       
-      navigate("/broadcaster", { replace: true })
+      // For file loads we navigate to broadcaster without adding a url param
+      navigate(`/broadcaster`, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load XML file")
     } finally {
@@ -156,12 +156,12 @@ export function LoaderPage() {
                   </DropdownMenu>
                 </InputGroupAddon>
                 {sourceType === "url" ? (
-                  <InputGroupInput
-                    placeholder={"https://example.com/struppi.xml"}
-                    value={sourceUrl}
-                    onChange={(e) => setSourceUrl(e.target.value)}
-                    disabled={isLoading}
-                  />
+                   <InputGroupInput
+                     placeholder={"https://example.com/struppi.xml"}
+                     value={sourceUrl}
+                     onChange={(e) => setSourceUrl(e.target.value)}
+                     disabled={isLoading}
+                   />
                 ) : (
                   <InputGroupInput
                     type={"file"}

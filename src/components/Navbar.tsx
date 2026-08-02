@@ -35,10 +35,10 @@ function Navbar() {
     }
 
     return (
-        <nav className="py-4 px-6 flex items-center justify-between border-b">
+        <nav className="py-3 px-4 sm:px-6 flex items-center justify-between border-b flex-wrap gap-3">
             <div
-                className="flex justify-center items-center gap-2 cursor-pointer"
-                onClick={() => (isLoaded ? navigate("/broadcaster") : navigate("/"))}
+                className="flex items-center gap-3 cursor-pointer shrink-0"
+                onClick={() => (isLoaded ? navigate(`/broadcaster${location.search}`) : navigate(`/`))}
             >
                 {isLoaded && currentSender?.senderlogo ? (
                     <ImageWithFallback
@@ -48,10 +48,10 @@ function Navbar() {
                         heightOnly
                     />
                 ) : (
-                    <Blocks size={30}/>
+                    <Blocks size={26}/>
                 )}
-                <div>
-                    <h1 className="text-2xl font-bold">{currentSender?.sendername || "StruPPI Viewer"}</h1>
+                <div className="leading-tight">
+                    <div className="text-lg font-semibold truncate max-w-xs">{currentSender?.sendername || "StruPPI Viewer"}</div>
                     {generierungsdatum && (
                         <p className="text-xs text-muted-foreground">Generiert: {generierungsdatum}</p>
                     )}
@@ -59,13 +59,13 @@ function Navbar() {
             </div>
 
             {isLoaded && (
-                <div className="flex opacity-85 items-center text-sm text-muted-foreground space-x-8">
+                <div className="flex-1 flex items-center justify-center">
                     <div className="hidden md:flex space-x-4">
                         {navLinks.map((link) => (
                             <Button
                                 key={link.name}
                                 variant={location.pathname === link.path ? "default" : "ghost"}
-                                onClick={() => navigate(link.path)}
+                                onClick={() => navigate(`${link.path}${location.search}`)}
                                 className="text-sm"
                             >
                                 {link.name}
@@ -75,14 +75,14 @@ function Navbar() {
                 </div>
             )}
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
                 {/* Theme toggle */}
-                <Button onClick={toggleTheme} variant="ghost" className="h-10">
+                <Button onClick={toggleTheme} variant="ghost" className="h-9 w-9">
                     {theme === 'dark' ? <Sun/> : <Moon/>}
                 </Button>
 
                 {isLoaded && (
-                    <Button className="h-10" variant="outline" onClick={handleReset}>
+                    <Button className="h-9" variant="outline" onClick={handleReset}>
                         Neues XML
                     </Button>
                 )}

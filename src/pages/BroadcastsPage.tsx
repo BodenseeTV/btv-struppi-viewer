@@ -17,6 +17,7 @@ export function BroadcastsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list")
   const [calendarPage, setCalendarPage] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
+  const nowButtonRef = useRef<HTMLButtonElement | null>(null)
   if (!data || !currentSender) {
     return (
       <Empty>
@@ -56,6 +57,14 @@ export function BroadcastsPage() {
   // Scroll to current time on list load
   useEffect(() => {
     if (viewMode === "list" && listRef.current) {
+      // Try to find the currently running broadcast first
+      const currentEl = Array.from(listRef.current.querySelectorAll("[data-current='true']"))[0]
+      if (currentEl) {
+        setTimeout(() => (currentEl as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" }), 100)
+        return
+      }
+
+      // Else find the next upcoming
       const now = new Date()
       const scrollElement = Array.from(listRef.current.querySelectorAll("[data-time]")).find((el) => {
         const attr = (el as HTMLElement).getAttribute("data-time") || ""
@@ -64,7 +73,7 @@ export function BroadcastsPage() {
       })
       if (scrollElement) {
         setTimeout(() => {
-          scrollElement.scrollIntoView({ behavior: "smooth", block: "center" })
+          (scrollElement as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" })
         }, 100)
       }
     }
@@ -77,8 +86,8 @@ export function BroadcastsPage() {
           <p className="text-muted-foreground">Total: {allSendungen.length} Sendungen</p>
         </div>
         {/* View Mode Tabs */}
-        <div className="flex gap-2">
-          <Button
+        <div className="flex gap-2 items-center">
+           <Button
             variant={viewMode === "list" ? "default" : "outline"}
             onClick={() => setViewMode("list")}
             className="gap-2"
@@ -93,6 +102,22 @@ export function BroadcastsPage() {
           >
             <Calendar size={18} />
             <span className="hidden sm:inline">Kalender</span>
+          </Button>
+          <Button
+            ref={nowButtonRef}
+            variant="ghost"
+            onClick={() => {
+              // switch to list and scroll to current
+              setViewMode("list")
+              setTimeout(() => {
+                const el = listRef.current?.querySelector("[data-current='true']") as HTMLElement | null
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
+              }, 150)
+            }}
+            title="Zur aktuell laufenden Sendung"
+            className="ml-1"
+          >
+            Aktuell
           </Button>
         </div>
       </div>
@@ -143,6 +168,10 @@ function ListViewBroadcasts({ sendungen, onSelectSendung, listRef }: ListViewBro
         const showHeader = dateKey !== lastDate
         if (showHeader) lastDate = dateKey
 
+        const start = parseDateTime(sendung.termin.start)
+        const end = parseDateTime(sendung.termin.ende)
+        const isCurrent = isCurrentBroadcast(start, end)
+
         return (
           <div key={sendung.sendung_key}>
             {showHeader && (
@@ -152,9 +181,10 @@ function ListViewBroadcasts({ sendungen, onSelectSendung, listRef }: ListViewBro
             )}
 
             <Card
-              className="cursor-pointer hover:shadow-lg transition-shadow"
+              className={`cursor-pointer hover:shadow-lg transition-shadow ${isCurrent ? 'ring-2 ring-primary bg-accent/50' : ''}`}
               onClick={() => onSelectSendung(sendung)}
               data-time={sendung.termin.start}
+              data-current={isCurrent ? 'true' : 'false'}
             >
               <CardContent className="p-4">
                 <div className="flex gap-4 items-start">
@@ -169,43 +199,45 @@ function ListViewBroadcasts({ sendungen, onSelectSendung, listRef }: ListViewBro
                     />
                   </div>
 
-                   {/* Info */}
-                   <div className="flex-1 min-w-0">
-                     <div className="flex items-start gap-2">
-                       <h3 className="font-semibold text-base truncate">{sendung.titel.termintitel}</h3>
-                       <div className="ml-auto flex gap-2 shrink-0">
-                         {isCurrentBroadcast(parseDateTime(sendung.termin.start), parseDateTime(sendung.termin.ende)) && (
-                           <Badge variant="destructive">LIVE</Badge>
-                         )}
-                         <Badge variant="muted">{sendung.infos?.klassifizierung?.formatgruppe || '—'}</Badge>
-                       </div>
-                     </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2">
+                      <h3 className="font-semibold text-base truncate">{sendung.titel.termintitel}</h3>
+                      <div className="ml-auto flex gap-2 shrink-0">
+                        {isCurrent && (
+                          <Badge variant="destructive">LIVE</Badge>
+                        )}
+                        <Badge variant="muted">{sendung.infos?.klassifizierung?.formatgruppe || '—'}</Badge>
+                      </div>
+                    </div>
 
-                     <p className="text-sm text-muted-foreground mt-1">
-                       {formatDateShort(parseDateTime(sendung.termin.start))} {formatTimeHM(parseDateTime(sendung.termin.start))} — {formatTimeHM(parseDateTime(sendung.termin.ende))}
-                     </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {formatDateShort(start)} {formatTimeHM(start)} — {formatTimeHM(end)}
+                    </p>
 
-                     {sendung.text?.[0]?._text && (
-                       <p className="text-xs text-muted-foreground line-clamp-2 mt-2">
-                         {sendung.text[0]._text}
-                       </p>
-                     )}
-                   </div>
+                    {sendung.text?.[0]?._text && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-2">
+                        {sendung.text[0]._text}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )
-      })}
+            </div>
+          )
+        })}
     </div>
   )
 }
+
 interface CalendarViewBroadcastsProps {
   sendungen: (Sendung & { sendung_key: string })[]
   onSelectSendung: (s: Sendung) => void
   page: number
-  onPageChange: (page: number) => void
+  onPageChange: (n: number) => void
 }
+
 function CalendarViewBroadcasts({
   sendungen,
   onSelectSendung,
@@ -311,6 +343,8 @@ function CalendarViewBroadcasts({
     </div>
   )
 }
+
+
 function TimeMarker() {
   const [offset, setOffset] = useState(0)
 
