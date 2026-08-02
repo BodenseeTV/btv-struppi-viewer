@@ -23,7 +23,6 @@ export function LoaderPage() {
   const [fileInput, setFileInput] = useState<File | null>(null)
   const { setData, setSender, setIsLoading, setError, isLoading, error } = useStruPPI()
   const navigate = useNavigate()
-  const location = window.location
   // Note: we intentionally use window.location here so the query param reflects the full pathname including any base.
   const [searchParams] = useSearchParams()
 
