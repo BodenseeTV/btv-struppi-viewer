@@ -9,11 +9,12 @@ import { useState } from "react"
 import { parseDateTime, formatDateLong } from "@/lib/utils"
 
 interface SeriesInfo {
-  seriesId: string
+  seriesId: string | null
   seriesTitle: string
   sendungen: Sendung[]
   folgenanzahl?: number
   staffelanzahl?: number
+  staffelNummer?: number
 }
 
 export function SeriesPage() {
@@ -42,25 +43,42 @@ export function SeriesPage() {
     )
   }
 
-  // Group broadcasts by series_ID
   const seriesMap = new Map<string, SeriesInfo>()
 
   currentSender.ablauf?.forEach((ablauf) => {
     ablauf.sendung.forEach((sendung) => {
       const seriesId = sendung.infos?.folge?.serien_ID
+      const seriesTitle = sendung.titel.termintitel
+      const staffel = sendung.infos?.folge?.staffel || 0
+      
+      let key: string
+      let displayTitle: string
+      let displaySeriesId: string | null = null
+
       if (seriesId) {
-          if (!seriesMap.has(seriesId)) {
-            seriesMap.set(seriesId, {
-              seriesId,
-              // Use the series ID as primary label (more stable than episode title)
-              seriesTitle: seriesId,
-              sendungen: [],
-              folgenanzahl: sendung.infos?.folge?.folgenanzahl,
-              staffelanzahl: sendung.infos?.folge?.staffelanzahl,
-            })
+        key = seriesId
+        displaySeriesId = seriesId
+        displayTitle = seriesId
+      } else {
+
+        key = `${seriesTitle}_S${staffel}`
+        displayTitle = `${seriesTitle}`
+        if (staffel > 0) {
+          displayTitle += ` (Staffel ${staffel})`
         }
-        seriesMap.get(seriesId)!.sendungen.push(sendung)
       }
+
+      if (!seriesMap.has(key)) {
+        seriesMap.set(key, {
+          seriesId: displaySeriesId,
+          seriesTitle: displayTitle,
+          sendungen: [],
+          folgenanzahl: sendung.infos?.folge?.folgenanzahl,
+          staffelanzahl: sendung.infos?.folge?.staffelanzahl,
+          staffelNummer: staffel,
+        })
+      }
+      seriesMap.get(key)!.sendungen.push(sendung)
     })
   })
 
@@ -84,30 +102,30 @@ export function SeriesPage() {
             <EmptyTitle>Keine Serien gefunden</EmptyTitle>
           </EmptyHeader>
         </Empty>
-      ) : (
-        <div className="space-y-4">
-          {seriesList.map((series) => (
-            <Card
-              key={series.seriesId}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => setSelectedSeries(series)}
-            >
-              <CardHeader>
-                <CardTitle>{series.seriesId}</CardTitle>
-                <CardDescription>
-                  {series.sendungen.length} Episode(n)
-                  {series.staffelanzahl && ` • ${series.staffelanzahl} Staffel(n)`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Erste Ausstrahlung: {formatDateLong(parseDateTime(series.sendungen[0]?.termin.start) || null)}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+       ) : (
+         <div className="space-y-4">
+           {seriesList.map((series) => (
+             <Card
+               key={series.seriesTitle}
+               className="cursor-pointer hover:shadow-lg transition-shadow"
+               onClick={() => setSelectedSeries(series)}
+             >
+               <CardHeader>
+                 <CardTitle>{series.seriesTitle}</CardTitle>
+                 <CardDescription>
+                   {series.sendungen.length} Episode(n)
+                   {series.staffelanzahl && ` • ${series.staffelanzahl} Staffel(n)`}
+                 </CardDescription>
+               </CardHeader>
+               <CardContent>
+                 <p className="text-sm text-muted-foreground">
+                   Erste Ausstrahlung: {formatDateLong(parseDateTime(series.sendungen[0]?.termin.start) || null)}
+                 </p>
+               </CardContent>
+             </Card>
+           ))}
+         </div>
+       )}
 
       {selectedSeries && (
         <SeriesDetailModal
@@ -120,44 +138,54 @@ export function SeriesPage() {
 }
 
 function SeriesDetailModal({ series, onClose }: { series: SeriesInfo; onClose: () => void }) {
+  const seasons = new Map<number, typeof series.sendungen>()
+  series.sendungen.forEach((s) => {
+    const num = s.infos?.folge?.staffel || 0
+    if (!seasons.has(num)) seasons.set(num, [])
+    seasons.get(num)!.push(s)
+  })
+
+  const seasonNumbers = Array.from(seasons.keys()).sort((a, b) => a - b)
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <CardHeader>
-          <CardTitle>{series.seriesId}</CardTitle>
-          <CardDescription>
-            {series.sendungen.length} Episode(n)
-            {series.staffelanzahl && ` • ${series.staffelanzahl} Staffel(n)`}
-          </CardDescription>
+      <Card className="w-full max-w-2xl max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+        <CardHeader className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="truncate">{series.seriesTitle}</CardTitle>
+            <CardDescription className="truncate">{series.sendungen.length} {series.sendungen.length === 1 ? 'Episode' : 'Episoden'}{series.staffelanzahl ? ` • ${series.staffelanzahl} Staffeln` : ''}</CardDescription>
+          </div>
+          <div>
+            <Button onClick={onClose} variant="ghost">Schließen</Button>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 96px)' }}>
           <div>
             <strong>Episoden:</strong>
-            <div className="mt-3 space-y-2">
-              {series.sendungen.sort((a, b) => {
-                const aNum = a.infos?.folge?.folgennummer || 0
-                const bNum = b.infos?.folge?.folgennummer || 0
-                return aNum - bNum
-              }).map((sendung, idx) => (
-                <div key={idx} className="p-3 bg-muted rounded text-sm">
-                  <div className="font-semibold">
-                    {sendung.infos?.folge?.folgennummer ? `Folge ${sendung.infos.folge.folgennummer}` : `Episode ${idx + 1}`}
-                    {sendung.infos?.folge?.staffel && ` (Staffel ${sendung.infos.folge.staffel})`}
-                  </div>
-                  <div className="text-muted-foreground mt-1">
-                    {sendung.titel.termintitel}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {formatDateLong(parseDateTime(sendung.termin.start) || null)}
+            <div className="mt-3 space-y-3">
+              {seasonNumbers.map((seasonNum) => (
+                <div key={seasonNum}>
+                  <div className="font-semibold mb-2">{seasonNum > 0 ? `Staffel ${seasonNum}` : 'Keine Staffelzuordnung'}</div>
+                  <div className="space-y-2">
+                    {seasons.get(seasonNum)!.sort((a, b) => {
+                      const aNum = a.infos?.folge?.folgennummer || 0
+                      const bNum = b.infos?.folge?.folgennummer || 0
+                      return aNum - bNum
+                    }).map((sendung, idx) => (
+                      <div key={idx} className="p-3 bg-muted rounded text-sm">
+                        <div className="font-semibold">
+                          {sendung.infos?.folge?.folgennummer ? `Folge ${sendung.infos.folge.folgennummer}` : `Episode ${idx + 1}`}
+                        </div>
+                        <div className="text-muted-foreground mt-1">{sendung.titel.termintitel}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{formatDateLong(parseDateTime(sendung.termin.start) || null)}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <Button onClick={onClose} className="w-full mt-4" variant="outline">
-            Schließen
-          </Button>
         </CardContent>
       </Card>
     </div>

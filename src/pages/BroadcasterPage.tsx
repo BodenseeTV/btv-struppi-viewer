@@ -92,8 +92,8 @@ export function BroadcasterPage() {
       </Card>
 
       <div className="flex gap-2">
-        <Button onClick={() => navigate("/broadcasts")} variant="outline">
-          Zu den Sendungen
+        <Button onClick={() => navigate("/programm")} variant="outline">
+          Zum Programm
         </Button>
         <Button onClick={() => navigate("/series")} variant="outline">
           Zu den Serien

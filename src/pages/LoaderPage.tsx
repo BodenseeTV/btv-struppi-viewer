@@ -23,10 +23,8 @@ export function LoaderPage() {
   const [fileInput, setFileInput] = useState<File | null>(null)
   const { setData, setSender, setIsLoading, setError, isLoading, error } = useStruPPI()
   const navigate = useNavigate()
-  // Note: we intentionally use window.location here so the query param reflects the full pathname including any base.
   const [searchParams] = useSearchParams()
 
-  // Check for URL parameter on mount
   useEffect(() => {
     const xmlUrl = searchParams.get("url")
     const xmlFile = searchParams.get("file")
@@ -52,15 +50,13 @@ export function LoaderPage() {
       const parsed = parseStruPPIXml(text)
       setData(parsed)
       
-      // Select first sender
       const firstSender = parsed.programmdaten.sender?.[0]
       if (firstSender) {
         setSender(firstSender)
       }
       
-      // Update URL with query parameter and navigate to broadcaster
       const encoded = encodeURIComponent(url)
-      navigate(`/broadcasts?url=${encoded}`, { replace: true })
+      navigate(`/programm?url=${encoded}`, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load XML")
     } finally {
@@ -76,13 +72,11 @@ export function LoaderPage() {
       const parsed = parseStruPPIXml(text)
       setData(parsed)
       
-      // Select first sender
       const firstSender = parsed.programmdaten.sender?.[0]
       if (firstSender) {
         setSender(firstSender)
       }
       
-      // For file loads we navigate to broadcaster without adding a url param
       navigate(`/broadcaster`, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load XML file")
