@@ -18,7 +18,7 @@ import { LoadingOverlay } from "@/components/LoadingOverlay"
 import { useTheme } from "@/components/theme-provider"
 
 export function LoaderPage() {
-  const btvUrl = "https://struppi.bodensee.tv/struppi.xml"
+  const btvUrl = "https://struppi.bodenseetv.ch/btv.xml"
 
   const [sourceType, setSourceType] = useState<"file" | "url">("url")
   const [sourceUrl, setSourceUrl] = useState<string>("")
