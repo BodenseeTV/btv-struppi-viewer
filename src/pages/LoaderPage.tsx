@@ -18,6 +18,8 @@ import { LoadingOverlay } from "@/components/LoadingOverlay"
 import { useTheme } from "@/components/theme-provider"
 
 export function LoaderPage() {
+  const btvUrl = "https://struppi.bodensee.tv/struppi.xml"
+
   const [sourceType, setSourceType] = useState<"file" | "url">("url")
   const [sourceUrl, setSourceUrl] = useState<string>("")
   const [fileInput, setFileInput] = useState<File | null>(null)
@@ -150,7 +152,7 @@ export function LoaderPage() {
                 </InputGroupAddon>
                 {sourceType === "url" ? (
                    <InputGroupInput
-                     placeholder={"https://example.com/struppi.xml"}
+                     placeholder={btvUrl}
                      value={sourceUrl}
                      onChange={(e) => setSourceUrl(e.target.value)}
                      disabled={isLoading}
@@ -164,6 +166,16 @@ export function LoaderPage() {
                   />
                 )}
               </InputGroup>
+            </Field>
+            <Field orientation="vertical">
+              <Button
+              variant={"secondary"}
+              disabled={sourceUrl === btvUrl || isLoading}
+                onClick={() => setSourceUrl(btvUrl)}
+                type="submit"
+              >
+               BodenseeTV StruPPI
+              </Button>
             </Field>
             <Field orientation="vertical">
               <Button
