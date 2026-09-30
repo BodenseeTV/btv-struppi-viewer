@@ -147,11 +147,4 @@ export function BroadcastsPage() {
   )
 }
 
-interface CalendarViewBroadcastsProps {
-  sendungen: (Sendung & { sendung_key: string })[]
-  onSelectSendung: (s: Sendung) => void
-  page: number
-  onPageChange: (n: number) => void
-}
-
 
