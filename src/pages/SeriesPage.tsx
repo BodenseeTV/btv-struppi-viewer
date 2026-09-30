@@ -50,27 +50,20 @@ export function SeriesPage() {
       const seriesId = sendung.infos?.folge?.serien_ID
       const seriesTitle = sendung.titel.termintitel
       const staffel = sendung.infos?.folge?.staffel || 0
-      
-      let key: string
-      let displayTitle: string
-      let displaySeriesId: string | null = null
+      console.log("seriesId", seriesId)
+      console.log("seriesTitle", seriesTitle)
+      console.log("staffel", staffel)
 
-      if (seriesId) {
-        key = seriesId
-        displaySeriesId = seriesId
-        displayTitle = seriesId
-      } else {
-
-        key = `${seriesTitle}_S${staffel}`
-        displayTitle = `${seriesTitle}`
-        if (staffel > 0) {
-          displayTitle += ` (Staffel ${staffel})`
-        }
+      let key = seriesId || "";
+      let displayTitle = seriesId || "";
+      if (staffel){
+        key = `${key}_${staffel}`
+        displayTitle += ` (Staffel ${staffel})`
       }
 
       if (!seriesMap.has(key)) {
         seriesMap.set(key, {
-          seriesId: displaySeriesId,
+          seriesId: key,
           seriesTitle: displayTitle,
           sendungen: [],
           folgenanzahl: sendung.infos?.folge?.folgenanzahl,

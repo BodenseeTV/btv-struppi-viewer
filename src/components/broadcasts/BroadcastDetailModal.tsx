@@ -12,7 +12,7 @@ export function BroadcastDetailModal({ sendung, onClose }: { sendung: Sendung; o
         <CardHeader className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <CardTitle className="truncate">{sendung.titel.termintitel}</CardTitle>
-            <CardDescription className="truncate">{formatDateLong(parseDateTime(sendung.termin.start))} {formatTimeHM(parseDateTime(sendung.termin.start))} — {formatTimeHM(parseDateTime(sendung.termin.ende))}</CardDescription>
+            <CardDescription className="truncate">{formatDateLong(parseDateTime(sendung.termin.start))} {formatTimeHM(parseDateTime(sendung.termin.start))} - {formatTimeHM(parseDateTime(sendung.termin.ende))}</CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {sendung.externe_id && sendung.externe_id.length > 0 && (

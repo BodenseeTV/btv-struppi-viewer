@@ -67,13 +67,13 @@ export function SendungenPage() {
     groups.get(key)!.occurrences.push(s)
   })
 
-  const list = Array.from(groups.values()).sort((a, b) => a.title.localeCompare(b.title))
+  const list = Array.from(groups.values())
 
   return (
     <div className="space-y-6 py-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Sendungen</h1>
-        <p className="text-muted-foreground">Total unique Folgen: {list.length}</p>
+        <p className="text-muted-foreground">Anzahl einzigartige Sendungen: {list.length}</p>
       </div>
 
       {list.length === 0 ? (
@@ -92,19 +92,23 @@ export function SendungenPage() {
             const ends = group.occurrences.map(o => parseDateTime(o.termin.ende)).filter(Boolean) as Date[]
             const first = starts.length ? new Date(Math.min(...starts.map(d => d.getTime()))) : null
             const last = ends.length ? new Date(Math.max(...ends.map(d => d.getTime()))) : null
-            const repeats = Math.max(0, group.occurrences.length - 1)
 
             return (
               <Card key={group.key} className="cursor-pointer" onClick={() => setSelected(group)}>
                 <CardHeader>
                   <CardTitle>{group.title}</CardTitle>
-                  <CardDescription>
-                    {first && last ? (formatDateLong(first) === formatDateLong(last) ? `${formatDateLong(first)} ${formatTimeHM(first)} — ${formatTimeHM(last)}` : `${formatDateLong(first)} ${formatTimeHM(first)} — ${formatDateLong(last)} ${formatTimeHM(last)}`) : '—'}
-                    {` • ${group.occurrences.length} ${group.occurrences.length === 1 ? 'Ausstrahlung' : 'Ausstrahlungen'}`}
-                    {repeats > 0 && ` • ${repeats} ${repeats === 1 ? 'Wiederholung' : 'Wiederholungen'}`}
-                  </CardDescription>
+                  
                 </CardHeader>
                 <CardContent>
+                  <CardDescription>
+                    {first && last ? 
+                    (formatDateLong(first) === formatDateLong(last) 
+                    ? `${formatDateLong(first)} ${formatTimeHM(first)} - ${formatTimeHM(last)}` 
+                    : `${formatDateLong(first)} ${formatTimeHM(first)} - ${formatDateLong(last)} ${formatTimeHM(last)}`) : '-'}
+                  </CardDescription>
+                  <CardDescription>
+                    {`${group.occurrences.length} ${group.occurrences.length === 1 ? 'Ausstrahlung' : 'Ausstrahlungen'}`}
+                  </CardDescription>
                   <p className="text-sm text-muted-foreground truncate">{group.folge?.ausstrahlungsinfo || ''}</p>
                 </CardContent>
               </Card>
@@ -122,7 +126,7 @@ export function SendungenPage() {
                   <CardDescription>{selected.occurrences.length} {selected.occurrences.length === 1 ? 'Ausstrahlung' : 'Ausstrahlungen'}</CardDescription>
                 </div>
                 <div>
-                  <Button onClick={() => setSelected(null)} variant="ghost">Schließen</Button>
+                  <Button onClick={() => setSelected(null)} variant="ghost">Schliessen</Button>
                 </div>
               </CardHeader>
             <CardContent className="overflow-y-auto" style={{ maxHeight: 'calc(80vh - 96px)' }}>

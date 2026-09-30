@@ -56,12 +56,12 @@ export function ListViewBroadcasts({ sendungen, onSelectSendung, listRef }: Prop
                             {isCurrent && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive text-white">LIVE</span>
                             )}
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">{sendung.infos?.klassifizierung?.formatgruppe || '—'}</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">{sendung.infos?.klassifizierung?.formatgruppe || '-'}</span>
                           </div>
                     </div>
 
                     <p className="text-sm text-muted-foreground mt-1">
-                      {formatDateShort(start)} {formatTimeHM(start)} — {formatTimeHM(end)}
+                      {formatDateShort(start)} {formatTimeHM(start)} - {formatTimeHM(end)}
                     </p>
 
                     {sendung.text?.[0]?._text && (
