@@ -17,12 +17,14 @@ export function parseDateTime(input?: string | null): Date | null {
   if (!Number.isNaN(d.getTime())) return d
 
   // Try ISO-ish without timezone (replace space with T)
-  const isoAttempt = s.replace(' ', 'T')
+  const isoAttempt = s.replace(" ", "T")
   const d2 = new Date(isoAttempt)
   if (!Number.isNaN(d2.getTime())) return d2
 
   // Try common German format: dd.MM.yyyy[THH:mm(:ss)]
-  const dm = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/)
+  const dm = s.match(
+    /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/
+  )
   if (dm) {
     const day = parseInt(dm[1], 10)
     const month = parseInt(dm[2], 10) - 1
@@ -35,7 +37,9 @@ export function parseDateTime(input?: string | null): Date | null {
   }
 
   // Try US format mm/dd/yyyy
-  const us = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/)
+  const us = s.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/
+  )
   if (us) {
     const month = parseInt(us[1], 10) - 1
     const day = parseInt(us[2], 10)
@@ -52,26 +56,46 @@ export function parseDateTime(input?: string | null): Date | null {
 }
 
 export function formatDateShort(date: Date | null): string {
-  if (!date) return ''
-  return date.toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit' })
+  if (!date) return ""
+  return date.toLocaleDateString("de-CH", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+  })
 }
 
 export function formatDateLong(date: Date | null): string {
-  if (!date) return ''
-  return date.toLocaleDateString('de-CH', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  if (!date) return ""
+  return date.toLocaleDateString("de-CH", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
 }
 
 export function formatDateTimeLong(date: Date | null): string {
-  if (!date) return ''
-  return date.toLocaleDateString('de-CH', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  if (!date) return ""
+  return date.toLocaleDateString("de-CH", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }
 
 export function formatTimeHM(date: Date | null): string {
-  if (!date) return ''
-  return date.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })
+  if (!date) return ""
+  return date.toLocaleTimeString("de-CH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }
 
-export function isCurrentBroadcast(start: Date | null, end: Date | null): boolean {
+export function isCurrentBroadcast(
+  start: Date | null,
+  end: Date | null
+): boolean {
   if (!start || !end) return false
   const now = new Date()
   return now >= start && now <= end
@@ -84,16 +108,16 @@ export function getTimeUntilBroadcast(start: Date | null): number {
 }
 
 export function getSendayWithDate(date: Date | null): string {
-  if (!date) return ''
-  return date.toLocaleDateString('de-CH', {
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
+  if (!date) return ""
+  return date.toLocaleDateString("de-CH", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   })
 }
 
 export function getWeekday(date: Date | null): string {
-  if (!date) return ''
-  return date.toLocaleDateString('de-CH', { weekday: 'long' })
+  if (!date) return ""
+  return date.toLocaleDateString("de-CH", { weekday: "long" })
 }

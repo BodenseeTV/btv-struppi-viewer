@@ -1,32 +1,89 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import { StruPPIProvider } from "@/context/StruPPIContext"
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom"
+import { useEffect } from "react"
+import { StruPPIProvider, useStruPPI } from "@/context/StruPPIContext"
 import { MainLayout } from "@/layouts/MainLayout"
 import { LoaderPage } from "@/pages/LoaderPage"
 import { BroadcasterPage } from "@/pages/BroadcasterPage"
 import { BroadcastsPage } from "@/pages/BroadcastsPage"
 import { SendungenPage } from "@/pages/SendungenPage"
+import { SendungDetailPage } from "@/pages/SendungDetailPage"
 import { SeriesPage } from "@/pages/SeriesPage"
+import { SeriesDetailPage } from "@/pages/SeriesDetailPage"
 import QueryLoader from "@/components/QueryLoader"
+
+function ViewerMetaUpdater() {
+  const { currentSender } = useStruPPI()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    const senderName = currentSender?.sendername || "StruPPI Viewer"
+    const pageName = location.pathname.replace("/", "") || "Startseite"
+    const isEmbedded = Boolean(
+      searchParams.get("hideHeader") ||
+      searchParams.get("embed") ||
+      searchParams.get("iframe")
+    )
+
+    document.title = isEmbedded
+      ? `${senderName} | Embedded View`
+      : `${senderName}${pageName && pageName !== "" && pageName !== "/" ? ` | ${pageName}` : ""}`
+
+    const favicon = document.querySelector(
+      "link[rel='icon']"
+    ) as HTMLLinkElement | null
+    const faviconHref = "/favicon.svg"
+
+    if (favicon) {
+      favicon.setAttribute("type", "image/svg+xml")
+      favicon.setAttribute("sizes", "32x32")
+      favicon.href = faviconHref
+    } else {
+      const newFavicon = document.createElement("link")
+      newFavicon.setAttribute("rel", "icon")
+      newFavicon.setAttribute("type", "image/svg+xml")
+      newFavicon.setAttribute("sizes", "32x32")
+      newFavicon.setAttribute("href", faviconHref)
+      document.head.appendChild(newFavicon)
+    }
+  }, [currentSender, location.pathname, searchParams])
+
+  return null
+}
+
+function AppShell() {
+  return (
+    <>
+      <QueryLoader />
+      <ViewerMetaUpdater />
+      <Routes>
+        <Route path="/" element={<LoaderPage />} />
+        <Route element={<MainLayout />}>
+          <Route path="/broadcaster" element={<BroadcasterPage />} />
+          <Route path="/programm" element={<BroadcastsPage />} />
+          <Route path="/sendungen" element={<SendungenPage />} />
+          <Route path="/sendungen/:id" element={<SendungDetailPage />} />
+          <Route path="/series" element={<SeriesPage />} />
+          <Route path="/series/:serieId" element={<SeriesDetailPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </>
+  )
+}
 
 export function App() {
   return (
     <StruPPIProvider>
       <Router basename={import.meta.env.BASE_URL}>
-        {/* QueryLoader listens for ?url=... on any page and loads the XML into context */}
-        <QueryLoader />
-        <Routes>
-          {/* Loader/Initial page - no layout */}
-          <Route path="/" element={<LoaderPage />} />
-
-          {/* Main layout pages */}
-          <Route element={<MainLayout />}>
-            <Route path="/broadcaster" element={<BroadcasterPage />} />
-            <Route path="/programm" element={<BroadcastsPage />} />
-            <Route path="/sendungen" element={<SendungenPage />} />
-            <Route path="/series" element={<SeriesPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
+        <AppShell />
       </Router>
     </StruPPIProvider>
   )

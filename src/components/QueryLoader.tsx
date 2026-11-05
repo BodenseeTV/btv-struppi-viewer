@@ -1,41 +1,97 @@
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import { useStruPPI } from "@/context/StruPPIContext"
-import { parseStruPPIXml } from "@/parsers/struppiParser"
+import { loadXmlFromUrl } from "@/lib/xml-loader"
 
 export default function QueryLoader() {
   const [searchParams] = useSearchParams()
-  const { data, setData, setSender, setIsLoading, setError } = useStruPPI()
+  const {
+    data,
+    currentSender,
+    setData,
+    setSender,
+    setIsLoading,
+    setError,
+    setXmlSource,
+  } = useStruPPI()
 
   useEffect(() => {
     const xmlUrl = searchParams.get("url")
-    if (!xmlUrl) return
-    const url = xmlUrl
-    // If data already loaded, do nothing
-    if (data) return
+    const requestedSender = searchParams.get("sender")
+    const forceRefresh = searchParams.has("refresh")
+
+    if (!xmlUrl) {
+      return
+    }
+
+    const safeXmlUrl = xmlUrl
+
+    if (data && !forceRefresh) {
+      const sender =
+        data.programmdaten.sender?.find(
+          (item) =>
+            item.sender_ID === requestedSender ||
+            item.senderkuerzel === requestedSender ||
+            item.sendername === requestedSender
+        ) ?? data.programmdaten.sender?.[0]
+
+      if (sender && currentSender?.sendername !== sender.sendername) {
+        setSender(sender)
+      }
+      return
+    }
+
+    let active = true
 
     async function load() {
       setIsLoading(true)
       setError(null)
+
       try {
-        const res = await fetch(url)
-        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`)
-        const text = await res.text()
-        const parsed = parseStruPPIXml(text)
+        const parsed = await loadXmlFromUrl(safeXmlUrl, { forceRefresh })
+        if (!active) return
+
         setData(parsed)
-        const firstSender = parsed.programmdaten.sender?.[0]
-        if (firstSender) setSender(firstSender)
+        setXmlSource({ url: safeXmlUrl, type: "url", label: safeXmlUrl })
+
+        const sender =
+          parsed.programmdaten.sender?.find(
+            (item) =>
+              item.sender_ID === requestedSender ||
+              item.senderkuerzel === requestedSender ||
+              item.sendername === requestedSender
+          ) ?? parsed.programmdaten.sender?.[0]
+
+        if (sender) {
+          setSender(sender)
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load XML from url")
+        if (!active) return
+        setError(
+          err instanceof Error ? err.message : "Failed to load XML from url"
+        )
       } finally {
-        setIsLoading(false)
+        if (active) {
+          setIsLoading(false)
+        }
       }
     }
 
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+
+    return () => {
+      active = false
+    }
+  }, [
+    currentSender,
+    data,
+    searchParams,
+    setData,
+    setError,
+    setIsLoading,
+    setSender,
+    setXmlSource,
+  ])
 
   return null
 }
-

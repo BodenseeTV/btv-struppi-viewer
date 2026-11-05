@@ -141,16 +141,48 @@
 }
 
 @layer base {
+  :root {
+    --radius: 0rem;
+  }
+
   * {
     @apply border-border outline-ring/50;
-    }
+    border-radius: 0 !important;
+  }
+
+  *::before,
+  *::after {
+    border-radius: 0 !important;
+  }
+
   body {
     @apply bg-background text-foreground;
-    }
+    font-size: 14px;
+  }
+
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
-    }
+  }
+
   html {
     @apply font-sans;
-    }
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply space-y-4 py-4;
+  }
+
+  .compact-page-header {
+    @apply gap-3;
+  }
+
+  .compact-card-header {
+    @apply py-3;
+  }
+
+  .compact-card-content {
+    @apply py-3 px-3;
+  }
 }

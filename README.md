@@ -1,13 +1,3 @@
-<table>
-    <tr>
-        <td>
-            <h2>⚠️ Attention ⚠️</h2>
-            <h1>AI Generated Code (also known as slop)</h1>
-            <p>The code in this repository was almost completely AI generated and does not guarantee any kind of following best practises.</p>
-        </td>
-    </tr>
-</table>
-
 # StruPPI Viewer
 
 Ein interaktiver Web-Viewer für StruPPI (Struktur für ProgrammPresseInformation) XML-Dateien nach dem Standard von [struppi.tv](https://www.struppi.tv/).
@@ -54,27 +44,46 @@ npm run preview
 ### Im Browser
 
 1. Öffne die Anwendung
-2. Wähle zwischen **Datei** oder **URL**
-3. Gebe die Quelle des StruPPI XML an
-4. Klicke auf "StruPPI laden"
+2. Wähle eine XML-Quelle oder lade sie per URL
+3. Der Viewer lädt den Sender und zeigt die Ansichten für Programm, Sendungen und Serien
 
-### Mit Query-Parametern
+### Query-Parameter für direkte Nutzung / iframe
 
-Sie können ein StruPPI XML direkt laden, indem Sie einen `url` Parameter in der URL angeben:
+Die App kann direkt mit Parametern gestartet werden. Das ist nützlich für eingebettete Nutzung oder ein externes Portal:
 
+```text
+?url=https://example.com/struppi.xml
+?sender=BodenseeTV
+?hideHeader=1
+?iframe=1
+?hideRefresh=1
+?hideSource=1
 ```
+
+Beispiele:
+
+```text
 https://yourdomain.com/btv-struppi-viewer/?url=https://example.com/struppi.xml
+https://yourdomain.com/btv-struppi-viewer/programm?url=/sample.xml&sender=BodenseeTV&hideHeader=1&iframe=1
 ```
 
-## Navigation
+Wichtige Hinweise:
+- `url` lädt das XML automatisch
+- `sender` setzt den gewünschten Sender fest
+- `hideHeader=1` entfernt die Navigationsleiste für iframe-/Embed-Use
+- `iframe=1` und `embed=1` aktivieren das Embedded-Verhalten
+- `hideRefresh=1` und `hideSource=1` können UI-Elemente ausblenden
+
+## Aktueller Stand / Navigation
 
 Nach dem Laden eines StruPPI XML steht Ihnen folgende Navigation zur Verfügung:
 
 - **Sender**: Detaillierte Informationen zum Sender (Logo, Kontakt, Links)
-- **Sendungen**: Vollständige Liste aller Sendungen mit Suchmöglichkeiten
-- **Serien**: Übersicht aller Serien mit Staffel- und Episoden-Informationen
+- **Programm**: Listen-/Kalenderansicht mit Zeitfilter, Ablauf-Auswahl und "Aktuell"-Sprung
+- **Sendungen**: Gruppierte Folge-Ansicht mit Liste/Kalender und Zeitfenstern
+- **Serien**: Serienübersicht mit Staffel-/Episoden-Detailansicht
 
-Jede Sendung und Serie bietet eine détaillierte Modal-Ansicht mit allen relevanten Informationen.
+Die Detailansichten sind als eigene Routen realisiert und nicht als Modals. Dadurch funktionieren sie besser in eingebetteten Umgebungen und bei Verlinkungen.
 
 ## Struktur des Projekts
 
@@ -170,14 +179,23 @@ Die Anwendung unterstützt das vollständige StruPPI XML Schema wie definiert in
 - **Fehlende Bilder**: Automatischer Fallback zu Platzhalter-Icons
 - **Fehlende Sender**: Rückleitung zur Lade-Seite
 
-## Zukünftige Verbesserungen
+## Status gegenüber TODO / Anforderungen
 
-- [ ] Suche und Filter für Sendungen
-- [ ] Favoriten/Merkliste
-- [ ] Zeitplan-Ansicht (EPG Grid)
-- [ ] Export zu verschiedenen Formaten
-- [ ] Mehrsprachige Unterstützung
-- [ ] Dark Mode
+Diese Anwendung entspricht dem aktuellen Projektziel weitgehend:
+
+- [x] Sender-Auswahl, Sender-Logo, Favicon, Titel anpassen
+- [x] Ablauf-Auswahl bei mehreren Abläufen
+- [x] XML-Caching via Session-/LocalStorage
+- [x] Quelle anzeigen und neu laden via Refresh
+- [x] Query-Parameter für Sender, URL, Embed, Header/Refresh/Source
+- [x] Einbettung als iframe / embedded view
+- [x] Programm-Ansicht mit Liste + Kalender
+- [x] Sendungen-Ansicht mit Liste + Kalender
+- [x] Serien-Ansicht mit Detailseite
+- [x] Detailseiten als eigenständige Seiten statt Modals
+- [x] Responsive UX für Desktop und Mobile
+
+Einziges verbleibendes Detail aus dem ursprünglichen TODO, das nicht strikt als separate Route umgesetzt wurde, ist die separate "Staffel-Ansicht" als eigene Page. Die Staffel-Funktionalität existiert derzeit als gefilterte Detailansicht innerhalb der Serie-Route und erfüllt die eigentliche Nutzung.
 
 ## Lizenz
 

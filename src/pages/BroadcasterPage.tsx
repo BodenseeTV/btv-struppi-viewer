@@ -1,9 +1,22 @@
 import { useStruPPI } from "@/context/StruPPIContext"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { ImageWithFallback } from "@/components/ImageWithFallback"
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { AlertCircle } from "lucide-react"
 
 export function BroadcasterPage() {
@@ -32,10 +45,10 @@ export function BroadcasterPage() {
   }
 
   return (
-    <div className="space-y-8 py-8">
+    <div className="page-shell">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-4 flex-wrap">
+        <CardHeader className="compact-card-header">
+          <CardTitle className="flex flex-wrap items-center gap-4">
             <ImageWithFallback
               links={currentSender.senderlogo}
               alt={currentSender.sendername}
@@ -48,7 +61,7 @@ export function BroadcasterPage() {
             {currentSender.senderkategorie || "Sender"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="compact-card-content space-y-3">
           {currentSender.senderkuerzel && (
             <div>
               <strong>Kürzel:</strong> {currentSender.senderkuerzel}
@@ -77,10 +90,15 @@ export function BroadcasterPage() {
           {currentSender.url && currentSender.url.length > 0 && (
             <div>
               <strong>URLs:</strong>
-              <ul className="list-disc pl-5 mt-2">
+              <ul className="mt-2 list-disc pl-5">
                 {currentSender.url.map((link, idx) => (
                   <li key={idx}>
-                    <a href={link.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    <a
+                      href={link.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
                       {link.titel || link.link}
                     </a>
                   </li>
@@ -102,4 +120,3 @@ export function BroadcasterPage() {
     </div>
   )
 }
-

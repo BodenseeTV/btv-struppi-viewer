@@ -1,14 +1,26 @@
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { ChevronDownIcon, Upload, AlertCircle, Sun, Moon } from "lucide-react"
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button.tsx"
 import { Field, FieldGroup } from "@/components/ui/field.tsx"
 import { parseStruPPIXml } from "@/parsers/struppiParser.ts"
@@ -16,6 +28,19 @@ import { useStruPPI } from "@/context/StruPPIContext"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { LoadingOverlay } from "@/components/LoadingOverlay"
 import { useTheme } from "@/components/theme-provider"
+import { loadXmlFromUrl as loadXmlByUrl } from "@/lib/xml-loader"
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  return (
+    <Button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      variant="ghost"
+    >
+      {theme === "dark" ? <Sun /> : <Moon />}
+    </Button>
+  )
+}
 
 export function LoaderPage() {
   const btvUrl = "https://struppi.bodenseetv.ch/btv.xml"
@@ -23,9 +48,65 @@ export function LoaderPage() {
   const [sourceType, setSourceType] = useState<"file" | "url">("url")
   const [sourceUrl, setSourceUrl] = useState<string>("")
   const [fileInput, setFileInput] = useState<File | null>(null)
-  const { setData, setSender, setIsLoading, setError, isLoading, error } = useStruPPI()
+  const {
+    setData,
+    setSender,
+    setIsLoading,
+    setError,
+    isLoading,
+    error,
+    setXmlSource,
+  } = useStruPPI()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  const resolveSender = useCallback(
+    (parsed: ReturnType<typeof parseStruPPIXml>, requestedSender: string | null) => {
+      return (
+        parsed.programmdaten.sender?.find(
+          (item) =>
+            item.sender_ID === requestedSender ||
+            item.senderkuerzel === requestedSender ||
+            item.sendername === requestedSender
+        ) ?? parsed.programmdaten.sender?.[0]
+      )
+    },
+    []
+  )
+
+  const loadXmlFromUrl = useCallback(
+    async (url: string) => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const parsed = await loadXmlByUrl(url)
+        setData(parsed)
+        setXmlSource({ url, type: "url", label: url })
+
+        const requestedSender = searchParams.get("sender")
+        const selectedSender = resolveSender(parsed, requestedSender)
+        if (selectedSender) {
+          setSender(selectedSender)
+        }
+
+        const nextParams = new URLSearchParams(searchParams)
+        nextParams.set("url", url)
+        if (selectedSender) {
+          nextParams.set(
+            "sender",
+            selectedSender.sender_ID ?? selectedSender.sendername
+          )
+        }
+
+        navigate(`/programm?${nextParams.toString()}`, { replace: true })
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load XML")
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [navigate, resolveSender, searchParams, setData, setError, setIsLoading, setSender, setXmlSource]
+  )
 
   useEffect(() => {
     const xmlUrl = searchParams.get("url")
@@ -34,37 +115,13 @@ export function LoaderPage() {
     if (xmlUrl) {
       setSourceUrl(xmlUrl)
       setSourceType("url")
-      loadXmlFromUrl(xmlUrl)
+      void loadXmlFromUrl(xmlUrl)
     } else if (xmlFile) {
       setSourceUrl(xmlFile)
       setSourceType("url")
-      loadXmlFromUrl(xmlFile)
+      void loadXmlFromUrl(xmlFile)
     }
-  }, [searchParams])
-
-  async function loadXmlFromUrl(url: string) {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`)
-      const text = await res.text()
-      const parsed = parseStruPPIXml(text)
-      setData(parsed)
-      
-      const firstSender = parsed.programmdaten.sender?.[0]
-      if (firstSender) {
-        setSender(firstSender)
-      }
-      
-      const encoded = encodeURIComponent(url)
-      navigate(`/programm?url=${encoded}`, { replace: true })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load XML")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  }, [loadXmlFromUrl, searchParams])
 
   async function loadXmlFromFile(file: File) {
     setIsLoading(true)
@@ -73,12 +130,13 @@ export function LoaderPage() {
       const text = await file.text()
       const parsed = parseStruPPIXml(text)
       setData(parsed)
-      
+      setXmlSource({ url: file.name, type: "file", label: file.name })
+
       const firstSender = parsed.programmdaten.sender?.[0]
       if (firstSender) {
         setSender(firstSender)
       }
-      
+
       navigate(`/broadcaster`, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load XML file")
@@ -95,28 +153,27 @@ export function LoaderPage() {
     }
   }
 
-  function ThemeToggle() {
-    const { theme, setTheme } = useTheme()
-    return (
-      <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} variant="ghost">
-        {theme === 'dark' ? <Sun /> : <Moon />}
-      </Button>
-    )
-  }
-
   return (
     <>
-      <LoadingOverlay isOpen={isLoading} message="XML wird geladen und geparst..." />
+      <LoadingOverlay
+        isOpen={isLoading}
+        message="XML wird geladen und geparst..."
+      />
       <Empty>
         <EmptyHeader>
-          <div className="flex items-center justify-between w-full">
+          <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-4">
               <EmptyMedia variant="icon">
                 {error ? <AlertCircle className="text-red-500" /> : <Upload />}
               </EmptyMedia>
               <div>
-                <EmptyTitle>{error ? "Fehler beim Laden" : "StruPPI XML laden"}</EmptyTitle>
-                <EmptyDescription>{error || "Bitte wähle ein StruPPI XML aus oder gebe eine URL ein"}</EmptyDescription>
+                <EmptyTitle>
+                  {error ? "Fehler beim Laden" : "StruPPI XML laden"}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {error ||
+                    "Bitte wähle ein StruPPI XML aus oder gebe eine URL ein"}
+                </EmptyDescription>
               </div>
             </div>
             <div className="ml-4">
@@ -132,13 +189,21 @@ export function LoaderPage() {
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={
-                        <InputGroupButton variant="ghost" className="pr-1.5! text-xs" disabled={isLoading}>
+                        <InputGroupButton
+                          variant="ghost"
+                          className="pr-1.5! text-xs"
+                          disabled={isLoading}
+                        >
                           {sourceType}
                           <ChevronDownIcon className="size-3" />
                         </InputGroupButton>
                       }
                     />
-                    <DropdownMenuContent align="start" sideOffset={8} alignOffset={-4}>
+                    <DropdownMenuContent
+                      align="start"
+                      sideOffset={8}
+                      alignOffset={-4}
+                    >
                       <DropdownMenuGroup>
                         <DropdownMenuItem onClick={() => setSourceType("file")}>
                           Datei
@@ -151,12 +216,12 @@ export function LoaderPage() {
                   </DropdownMenu>
                 </InputGroupAddon>
                 {sourceType === "url" ? (
-                   <InputGroupInput
-                     placeholder={btvUrl}
-                     value={sourceUrl}
-                     onChange={(e) => setSourceUrl(e.target.value)}
-                     disabled={isLoading}
-                   />
+                  <InputGroupInput
+                    placeholder={btvUrl}
+                    value={sourceUrl}
+                    onChange={(e) => setSourceUrl(e.target.value)}
+                    disabled={isLoading}
+                  />
                 ) : (
                   <InputGroupInput
                     type={"file"}
@@ -169,19 +234,23 @@ export function LoaderPage() {
             </Field>
             <Field orientation="vertical">
               <Button
-              variant={"secondary"}
-              disabled={sourceUrl === btvUrl || isLoading}
+                variant={"secondary"}
+                disabled={sourceUrl === btvUrl || isLoading}
                 onClick={() => setSourceUrl(btvUrl)}
                 type="submit"
               >
-               BodenseeTV StruPPI
+                BodenseeTV StruPPI
               </Button>
             </Field>
             <Field orientation="vertical">
               <Button
                 onClick={handleLoad}
                 type="submit"
-                disabled={isLoading || (!sourceUrl && sourceType === "url") || (!fileInput && sourceType === "file")}
+                disabled={
+                  isLoading ||
+                  (!sourceUrl && sourceType === "url") ||
+                  (!fileInput && sourceType === "file")
+                }
               >
                 {isLoading ? "Lädt..." : "StruPPI laden"}
               </Button>
@@ -192,4 +261,3 @@ export function LoaderPage() {
     </>
   )
 }
-
