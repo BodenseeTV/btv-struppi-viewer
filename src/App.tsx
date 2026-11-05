@@ -36,21 +36,41 @@ function ViewerMetaUpdater() {
       ? `${senderName} | Embedded View`
       : `${senderName}${pageName && pageName !== "" && pageName !== "/" ? ` | ${pageName}` : ""}`
 
+    const candidateIcon = currentSender?.senderlogo?.find((link) => !!link.link)?.link
+    const resolvedIcon = (() => {
+      if (!candidateIcon) return "/favicon.svg"
+
+      try {
+        const parsed = new URL(candidateIcon, window.location.origin)
+        return parsed.toString()
+      } catch {
+        return candidateIcon.startsWith("/")
+          ? `${window.location.origin}${candidateIcon}`
+          : candidateIcon
+      }
+    })()
+
     const favicon = document.querySelector(
       "link[rel='icon']"
     ) as HTMLLinkElement | null
-    const faviconHref = "/favicon.svg"
+    const faviconType = resolvedIcon.toLowerCase().endsWith(".svg")
+      ? "image/svg+xml"
+      : resolvedIcon.toLowerCase().endsWith(".png")
+        ? "image/png"
+        : resolvedIcon.toLowerCase().endsWith(".ico")
+          ? "image/x-icon"
+          : "image/png"
 
     if (favicon) {
-      favicon.setAttribute("type", "image/svg+xml")
+      favicon.setAttribute("type", faviconType)
       favicon.setAttribute("sizes", "32x32")
-      favicon.href = faviconHref
+      favicon.setAttribute("href", resolvedIcon)
     } else {
       const newFavicon = document.createElement("link")
       newFavicon.setAttribute("rel", "icon")
-      newFavicon.setAttribute("type", "image/svg+xml")
+      newFavicon.setAttribute("type", faviconType)
       newFavicon.setAttribute("sizes", "32x32")
-      newFavicon.setAttribute("href", faviconHref)
+      newFavicon.setAttribute("href", resolvedIcon)
       document.head.appendChild(newFavicon)
     }
   }, [currentSender, location.pathname, searchParams])

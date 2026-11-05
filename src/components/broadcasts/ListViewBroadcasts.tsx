@@ -39,6 +39,9 @@ export function ListViewBroadcasts({
         const start = parseDateTime(sendung.termin.start)
         const end = parseDateTime(sendung.termin.ende)
         const isCurrent = isCurrentBroadcast(start, end)
+        const imageLinks = sendung.medium?.find(
+          (m) => "bildmaterial" in m.mediumtyp
+        )?.url
 
         return (
           <div key={sendung.sendung_key}>
@@ -56,19 +59,17 @@ export function ListViewBroadcasts({
             >
               <CardContent className="p-3">
                 <div className="flex items-start gap-3">
-                  <div className="hidden shrink-0 sm:block">
-                    <ImageWithFallback
-                      links={
-                        sendung.medium?.find(
-                          (m) => "bildmaterial" in m.mediumtyp
-                        )?.url
-                      }
-                      alt={sendung.titel.termintitel}
-                      size="md"
-                      heightOnly
-                      className="w-20"
-                    />
-                  </div>
+                  {imageLinks && imageLinks.length > 0 && (
+                    <div className="hidden shrink-0 sm:block">
+                      <ImageWithFallback
+                        links={imageLinks}
+                        alt={sendung.titel.termintitel}
+                        size="md"
+                        heightOnly
+                        className="w-20"
+                      />
+                    </div>
+                  )}
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start gap-2">

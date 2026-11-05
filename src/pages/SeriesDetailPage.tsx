@@ -18,6 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 import { formatDateLong, formatTimeHM, parseDateTime } from "@/lib/utils"
 import type { Sendung } from "@/types/struppi"
 
@@ -122,6 +123,9 @@ export function SeriesDetailPage() {
         .filter((value): value is number => Boolean(value))
     )
   )
+  const seriesImage = filteredEntries
+    .find((entry) => entry.medium?.some((medium) => "bildmaterial" in medium.mediumtyp))
+    ?.medium?.find((medium) => "bildmaterial" in medium.mediumtyp)?.url
 
   return (
     <div className="page-shell">
@@ -132,10 +136,23 @@ export function SeriesDetailPage() {
 
       <Card>
         <CardHeader className="compact-card-header">
-          <CardTitle className="text-2xl">{seriesTitle}</CardTitle>
-          <CardDescription>
-            {filteredEntries.length} Ausstrahlungen
-          </CardDescription>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            {seriesImage && seriesImage.length > 0 && (
+              <ImageWithFallback
+                links={seriesImage}
+                alt={seriesTitle}
+                size="lg"
+                heightOnly
+                className="h-28 w-auto max-w-40"
+              />
+            )}
+            <div>
+              <CardTitle className="text-2xl">{seriesTitle}</CardTitle>
+              <CardDescription>
+                {filteredEntries.length} Ausstrahlungen
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="compact-card-content space-y-3">
           {seasonSet.length > 1 && (

@@ -1,6 +1,7 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 // Third-party Imports
+import { de } from "date-fns/locale"
 import {
   addHours,
   areIntervalsOverlapping,
@@ -80,23 +81,19 @@ export function WeekView({
     })
   }, [currentDate])
 
-  const allDayEvents = useMemo(() => {
-    return events
-      .filter((event) => event.allDay || isMultiDayEvent(event))
-      .filter((event) =>
-        days.some(
-          (day) =>
-            isSameDay(day, event.start) ||
-            isSameDay(day, event.end) ||
-            (day > event.start && day < event.end)
-        )
-      )
-  }, [events, days])
+  const allDayEvents = useMemo(
+    () => events.filter((event) => event.allDay),
+    [events]
+  )
 
   const processedDayEvents = useMemo(() => {
     return days.map((day) => {
       const dayEvents = events.filter((event) => {
-        if (event.allDay || isMultiDayEvent(event)) return false
+        if (event.allDay) {
+          return isSameDay(day, event.start)
+        }
+
+        if (isMultiDayEvent(event)) return false
 
         return (
           isSameDay(day, event.start) ||
@@ -119,7 +116,21 @@ export function WeekView({
       const dayStart = startOfDay(day)
       const columns: { event: CalendarEvent; end: Date }[][] = []
 
-      sortedEvents.forEach((event) => {
+      const fullDayEvents = sortedEvents.filter((event) => event.allDay)
+      fullDayEvents.forEach((event) => {
+        positionedEvents.push({
+          event,
+          top: 0,
+          height: (EndHour - StartHour) * WeekCellsHeight,
+          left: 0,
+          width: 1,
+          zIndex: 11,
+        })
+      })
+
+      const timedEvents = sortedEvents.filter((event) => !event.allDay)
+
+      timedEvents.forEach((event) => {
         const adjustedStart = isSameDay(day, event.start)
           ? event.start
           : dayStart
@@ -182,7 +193,7 @@ export function WeekView({
     onEventSelect(event)
   }
 
-  const showAllDaySection = allDayEvents.length > 0
+  const showAllDaySection = false
 
   const { currentTimePosition, currentTimeVisible } = useCurrentTimeIndicator(
     currentDate,
@@ -190,6 +201,20 @@ export function WeekView({
     StartHour,
     EndHour
   )
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const viewportMinutes = (EndHour - StartHour) * 60
+    const rawTop = ((nowMinutes - StartHour * 60) / viewportMinutes) * (viewportMinutes * WeekCellsHeight / 60)
+    const target = Math.max(0, rawTop - container.clientHeight * 0.35)
+
+    container.scrollTop = target
+  }, [currentDate])
 
   return (
     <div data-slot="week-view" className="flex h-full flex-col">
@@ -206,7 +231,9 @@ export function WeekView({
             <span className="sm:hidden" aria-hidden="true">
               {format(day, "E")[0]} {format(day, "d")}
             </span>
-            <span className="max-sm:hidden">{format(day, "EEE dd")}</span>
+            <span className="max-sm:hidden">
+              {format(day, "EEE dd", { locale: de })}
+            </span>
           </div>
         ))}
       </div>
@@ -267,99 +294,108 @@ export function WeekView({
         </div>
       )}
 
-      <div className="grid flex-1 grid-cols-8 overflow-hidden">
-        <div className="grid auto-cols-fr border-r border-border/70">
-          {hours.map((hour, index) => (
+      <div
+        ref={scrollRef}
+        className="overflow-y-auto"
+        style={{ height: `${10 * WeekCellsHeight}px` }}
+      >
+        <div
+          className="grid min-h-[calc(var(--week-cells-height)*24)] grid-cols-8"
+          style={{ height: `${(EndHour - StartHour) * WeekCellsHeight}px` }}
+        >
+          <div className="grid auto-cols-fr border-r border-border/70">
+            {hours.map((hour, index) => (
+              <div
+                key={hour.toString()}
+                className="relative min-h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
+              >
+                {index > 0 && (
+                  <span className="absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
+                    {format(hour, "HH:mm")}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {days.map((day, dayIndex) => (
             <div
-              key={hour.toString()}
-              className="relative min-h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
+              key={day.toString()}
+              className="relative grid auto-cols-fr border-r border-border/70 last:border-r-0"
+              data-today={isToday(day) || undefined}
             >
-              {index > 0 && (
-                <span className="absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
-                </span>
+              {(processedDayEvents[dayIndex] ?? []).map((positionedEvent) => (
+                <div
+                  key={positionedEvent.event.id}
+                  className="absolute z-10 px-0.5"
+                  style={{
+                    top: `${positionedEvent.top}px`,
+                    height: `${positionedEvent.height}px`,
+                    left: `${positionedEvent.left * 100}%`,
+                    width: `${positionedEvent.width * 100}%`,
+                    zIndex: positionedEvent.zIndex,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="h-full w-full">
+                    <EventItem
+                      event={positionedEvent.event}
+                      view="week"
+                      onClick={(e) => handleEventClick(positionedEvent.event, e)}
+                      showTime
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {currentTimeVisible && isToday(day) && (
+                <div
+                  className="pointer-events-none absolute right-0 left-0 z-20"
+                  style={{ top: `${currentTimePosition}%` }}
+                >
+                  <div className="relative flex items-center">
+                    <div className="absolute -left-1 h-2.5 w-2.5 rounded-full bg-red-600 shadow-[0_0_0_2px_rgba(255,255,255,0.9)]"></div>
+                    <div className="h-[3px] w-full bg-red-600"></div>
+                  </div>
+                </div>
               )}
+              {hours.map((hour) => {
+                const hourValue = getHours(hour)
+
+                return (
+                  <div
+                    key={hour.toString()}
+                    className="relative min-h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
+                  >
+                    {[0, 1, 2, 3].map((quarter) => (
+                      <CalendarCell
+                        key={`${hour.toString()}-${quarter}`}
+                        time={hourValue + quarter * 0.25}
+                        className={cn(
+                          "absolute h-[calc(var(--week-cells-height)/4)] w-full",
+                          quarter === 0 && "top-0",
+                          quarter === 1 &&
+                            "top-[calc(var(--week-cells-height)/4)]",
+                          quarter === 2 &&
+                            "top-[calc(var(--week-cells-height)/4*2)]",
+                          quarter === 3 &&
+                            "top-[calc(var(--week-cells-height)/4*3)]"
+                        )}
+                        onClick={() => {
+                          const startTime = new Date(day)
+
+                          startTime.setHours(hourValue)
+                          startTime.setMinutes(quarter * 15)
+                          onEventCreate(startTime)
+                        }}
+                      />
+                    ))}
+                  </div>
+                )
+              })}
             </div>
           ))}
         </div>
-
-        {days.map((day, dayIndex) => (
-          <div
-            key={day.toString()}
-            className="relative grid auto-cols-fr border-r border-border/70 last:border-r-0"
-            data-today={isToday(day) || undefined}
-          >
-            {(processedDayEvents[dayIndex] ?? []).map((positionedEvent) => (
-              <div
-                key={positionedEvent.event.id}
-                className="absolute z-10 px-0.5"
-                style={{
-                  top: `${positionedEvent.top}px`,
-                  height: `${positionedEvent.height}px`,
-                  left: `${positionedEvent.left * 100}%`,
-                  width: `${positionedEvent.width * 100}%`,
-                  zIndex: positionedEvent.zIndex,
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="h-full w-full">
-                  <EventItem
-                    event={positionedEvent.event}
-                    view="week"
-                    onClick={(e) => handleEventClick(positionedEvent.event, e)}
-                    showTime
-                  />
-                </div>
-              </div>
-            ))}
-
-            {currentTimeVisible && isToday(day) && (
-              <div
-                className="pointer-events-none absolute right-0 left-0 z-20"
-                style={{ top: `${currentTimePosition}%` }}
-              >
-                <div className="relative flex items-center">
-                  <div className="absolute -left-1 h-2 w-2 rounded-full bg-primary"></div>
-                  <div className="h-[2px] w-full bg-primary"></div>
-                </div>
-              </div>
-            )}
-            {hours.map((hour) => {
-              const hourValue = getHours(hour)
-
-              return (
-                <div
-                  key={hour.toString()}
-                  className="relative min-h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
-                >
-                  {[0, 1, 2, 3].map((quarter) => (
-                    <CalendarCell
-                      key={`${hour.toString()}-${quarter}`}
-                      time={hourValue + quarter * 0.25}
-                      className={cn(
-                        "absolute h-[calc(var(--week-cells-height)/4)] w-full",
-                        quarter === 0 && "top-0",
-                        quarter === 1 &&
-                          "top-[calc(var(--week-cells-height)/4)]",
-                        quarter === 2 &&
-                          "top-[calc(var(--week-cells-height)/4*2)]",
-                        quarter === 3 &&
-                          "top-[calc(var(--week-cells-height)/4*3)]"
-                      )}
-                      onClick={() => {
-                        const startTime = new Date(day)
-
-                        startTime.setHours(hourValue)
-                        startTime.setMinutes(quarter * 15)
-                        onEventCreate(startTime)
-                      }}
-                    />
-                  ))}
-                </div>
-              )
-            })}
-          </div>
-        ))}
       </div>
     </div>
   )

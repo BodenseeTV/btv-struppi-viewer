@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 
 // Third-party Imports
-import { differenceInMinutes, format, getMinutes, isPast } from "date-fns"
+import { differenceInMinutes, format, isPast } from "date-fns"
 
 // Type Imports
 import type { CalendarEvent } from "@/components/calendar-view/event-calendar-01"
@@ -15,8 +15,7 @@ import {
   getMonthViewEventPaddingClasses,
 } from "@/components/calendar-view/event-calendar-01"
 
-const formatEventTime = (date: Date) =>
-  format(date, getMinutes(date) === 0 ? "ha" : "h:mma").toLowerCase()
+const formatEventTime = (date: Date) => format(date, "HH:mm")
 
 interface EventWrapperProps {
   event: CalendarEvent

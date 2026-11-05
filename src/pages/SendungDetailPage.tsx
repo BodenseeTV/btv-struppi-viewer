@@ -18,6 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 import { formatDateLong, formatTimeHM, parseDateTime } from "@/lib/utils"
 
 export function SendungDetailPage() {
@@ -80,6 +81,9 @@ export function SendungDetailPage() {
 
   const start = parseDateTime(sendung.termin.start)
   const end = parseDateTime(sendung.termin.ende)
+  const sendungImage = sendung.medium?.find(
+    (medium) => "bildmaterial" in medium.mediumtyp
+  )?.url
 
   return (
     <div className="page-shell">
@@ -90,12 +94,25 @@ export function SendungDetailPage() {
 
       <Card>
         <CardHeader className="compact-card-header">
-          <CardTitle className="text-2xl">
-            {sendung.titel?.termintitel || "Unbenannte Sendung"}
-          </CardTitle>
-          <CardDescription>
-            {sendung.sendung_id} • {currentSender.sendername}
-          </CardDescription>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            {sendungImage && sendungImage.length > 0 && (
+              <ImageWithFallback
+                links={sendungImage}
+                alt={sendung.titel?.termintitel || "Sendungsbild"}
+                size="lg"
+                heightOnly
+                className="h-28 w-auto max-w-40"
+              />
+            )}
+            <div>
+              <CardTitle className="text-2xl">
+                {sendung.titel?.termintitel || "Unbenannte Sendung"}
+              </CardTitle>
+              <CardDescription>
+                {sendung.sendung_id} • {currentSender.sendername}
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="compact-card-content space-y-3">
           <div className="grid gap-3 md:grid-cols-2">

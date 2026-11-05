@@ -22,8 +22,8 @@ import { useStruPPI } from "@/context/StruPPIContext"
 import { formatDateLong, formatTimeHM, parseDateTime } from "@/lib/utils"
 import type { Sendung } from "@/types/struppi"
 import { AlertCircle, Calendar, List } from "lucide-react"
-import { useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useMemo, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 interface FolgeGroup {
   key: string
@@ -78,7 +78,9 @@ function matchesTimeRange(
 export function SendungenPage() {
   const { data, currentSender } = useStruPPI()
   const navigate = useNavigate()
-  const [viewMode, setViewMode] = useState<ViewMode>("list")
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialViewMode = searchParams.get("view") === "calendar" ? "calendar" : "list"
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
   const [timeRange, setTimeRange] = useState<TimeRangePreset>("all")
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
@@ -133,37 +135,61 @@ export function SendungenPage() {
     [fromDate, groups, timeRange, toDate]
   )
 
-  const calendarEvents = useMemo<CalendarEvent[]>(
-    () =>
-      list.flatMap((group) =>
-        group.occurrences
-          .filter((occurrence) =>
-            matchesTimeRange(
-              parseDateTime(occurrence.termin.start),
-              timeRange,
-              fromDate,
-              toDate
-            )
-          )
-          .map((occurrence) => {
-            const start = parseDateTime(occurrence.termin.start) ?? new Date()
-            const end =
-              parseDateTime(occurrence.termin.ende) ?? new Date(start.getTime())
+  const calendarEvents = useMemo<CalendarEvent[]>(() => {
+    const events: CalendarEvent[] = []
 
-            return {
-              id: occurrence.sendung_id,
-              title: occurrence.titel?.termintitel || group.title,
-              description:
-                occurrence.text?.find((text) => text.textart === "Beschreibung")
-                  ?._text ?? "",
-              start,
-              end,
-              allDay: false,
-            }
-          })
-      ),
-    [fromDate, list, timeRange, toDate]
-  )
+    list.forEach((group, index) => {
+      const starts = group.occurrences
+        .map((occurrence) => parseDateTime(occurrence.termin.start))
+        .filter((date): date is Date => Boolean(date))
+      const ends = group.occurrences
+        .map((occurrence) => parseDateTime(occurrence.termin.ende))
+        .filter((date): date is Date => Boolean(date))
+
+      if (starts.length === 0 || ends.length === 0) return
+
+      const start = new Date(Math.min(...starts.map((date) => date.getTime())))
+      const end = new Date(Math.max(...ends.map((date) => date.getTime())))
+      const durationMinutes = Math.max(
+        0,
+        Math.round((end.getTime() - start.getTime()) / 60000)
+      )
+
+      const primaryOccurrence = group.occurrences[0]
+
+      events.push({
+        id: `${group.key}-${index}`,
+        title: group.title,
+        description:
+          primaryOccurrence?.text?.find((text) => text.textart === "Beschreibung")
+            ?._text ?? "",
+        start,
+        end,
+        allDay: durationMinutes >= 23 * 60,
+        color: ["family", "business", "personal", "holiday", "etc"][
+          index % 5
+        ] as CalendarEvent["color"],
+      })
+    })
+
+    return events
+  }, [list])
+
+  useEffect(() => {
+    const viewParam = searchParams.get("view")
+    const next = new URLSearchParams(searchParams)
+
+    if (viewMode === "calendar" && viewParam !== "calendar") {
+      next.set("view", "calendar")
+      setSearchParams(next, { replace: true })
+      return
+    }
+
+    if (viewMode === "list" && viewParam !== null) {
+      next.delete("view")
+      setSearchParams(next, { replace: true })
+    }
+  }, [searchParams, setSearchParams, viewMode])
 
   if (!data || !currentSender) {
     return (

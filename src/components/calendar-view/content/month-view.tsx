@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react"
 
 // Third-party Imports
+import { de } from "date-fns/locale"
 import {
   addDays,
   eachDayOfInterval,
@@ -81,7 +82,7 @@ export function MonthView({
   const weekdays = useMemo(
     () =>
       Array.from({ length: 7 }).map((_, i) =>
-        format(addDays(startOfWeek(new Date()), i), "EEE")
+        format(addDays(startOfWeek(new Date()), i), "EEE", { locale: de })
       ),
     []
   )
@@ -242,7 +243,7 @@ export function MonthView({
                           >
                             <div className="space-y-2">
                               <div className="text-sm font-medium">
-                                {format(day, "EEE d")}
+                                {format(day, "EEE d", { locale: de })}
                               </div>
                               <div className="space-y-1">
                                 {sortEvents(allEvents).map((event) => (

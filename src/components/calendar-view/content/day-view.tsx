@@ -1,7 +1,7 @@
 "use client"
 
 // React Imports
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 // Third-party Imports
 import {
@@ -78,7 +78,7 @@ export function DayView({
   }, [currentDate, events])
 
   const allDayEvents = useMemo(
-    () => dayEvents.filter((event) => event.allDay || isMultiDayEvent(event)),
+    () => dayEvents.filter((event) => event.allDay),
     [dayEvents]
   )
 
@@ -90,6 +90,17 @@ export function DayView({
   const positionedEvents = useMemo(() => {
     const result: PositionedEvent[] = []
     const dayStart = startOfDay(currentDate)
+
+    allDayEvents.forEach((event) => {
+      result.push({
+        event,
+        top: 0,
+        height: (EndHour - StartHour) * WeekCellsHeight,
+        left: 0,
+        width: 1,
+        zIndex: 11,
+      })
+    })
 
     const sortedEvents = [...timeEvents].sort((a, b) => {
       if (a.start < b.start) return -1
@@ -150,14 +161,14 @@ export function DayView({
     })
 
     return result
-  }, [currentDate, timeEvents])
+  }, [allDayEvents, currentDate, timeEvents])
 
   const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation()
     onEventSelect(event)
   }
 
-  const showAllDaySection = allDayEvents.length > 0
+  const showAllDaySection = false
 
   const { currentTimePosition, currentTimeVisible } = useCurrentTimeIndicator(
     currentDate,
@@ -165,6 +176,20 @@ export function DayView({
     StartHour,
     EndHour
   )
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const viewportMinutes = (EndHour - StartHour) * 60
+    const rawTop = ((nowMinutes - StartHour * 60) / viewportMinutes) * (viewportMinutes * WeekCellsHeight / 60)
+    const target = Math.max(0, rawTop - container.clientHeight * 0.35)
+
+    container.scrollTop = target
+  }, [currentDate])
 
   return (
     <div data-slot="day-view" className="contents">
@@ -194,91 +219,100 @@ export function DayView({
         </div>
       )}
 
-      <div className="grid flex-1 grid-cols-[3rem_1fr] overflow-hidden border-t border-border/70 sm:grid-cols-[4rem_1fr]">
-        <div>
-          {hours.map((hour, index) => (
-            <div
-              key={hour.toString()}
-              className="relative h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
-            >
-              {index > 0 && (
-                <span className="absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="relative">
-          {positionedEvents.map((positionedEvent) => (
-            <div
-              key={positionedEvent.event.id}
-              className="absolute z-10 px-0.5"
-              style={{
-                top: `${positionedEvent.top}px`,
-                height: `${positionedEvent.height}px`,
-                left: `${positionedEvent.left * 100}%`,
-                width: `${positionedEvent.width * 100}%`,
-                zIndex: positionedEvent.zIndex,
-              }}
-            >
-              <div className="h-full w-full">
-                <EventItem
-                  event={positionedEvent.event}
-                  view="day"
-                  onClick={(e) => handleEventClick(positionedEvent.event, e)}
-                  showTime
-                />
-              </div>
-            </div>
-          ))}
-
-          {currentTimeVisible && (
-            <div
-              className="pointer-events-none absolute right-0 left-0 z-20"
-              style={{ top: `${currentTimePosition}%` }}
-            >
-              <div className="relative flex items-center">
-                <div className="absolute -left-1 h-2 w-2 rounded-full bg-primary"></div>
-                <div className="h-0.5 w-full bg-primary"></div>
-              </div>
-            </div>
-          )}
-
-          {hours.map((hour) => {
-            const hourValue = getHours(hour)
-
-            return (
+      <div
+        ref={scrollRef}
+        className="overflow-y-auto"
+        style={{ height: `${10 * WeekCellsHeight}px` }}
+      >
+        <div
+          className="grid min-h-[calc(var(--week-cells-height)*24)] grid-cols-[3rem_1fr] border-t border-border/70 sm:grid-cols-[4rem_1fr]"
+          style={{ height: `${(EndHour - StartHour) * WeekCellsHeight}px` }}
+        >
+          <div>
+            {hours.map((hour, index) => (
               <div
                 key={hour.toString()}
                 className="relative h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
               >
-                {[0, 1, 2, 3].map((quarter) => (
-                  <CalendarCell
-                    key={`${hour.toString()}-${quarter}`}
-                    time={hourValue + quarter * 0.25}
-                    className={cn(
-                      "absolute h-[calc(var(--week-cells-height)/4)] w-full",
-                      quarter === 0 && "top-0",
-                      quarter === 1 && "top-[calc(var(--week-cells-height)/4)]",
-                      quarter === 2 &&
-                        "top-[calc(var(--week-cells-height)/4*2)]",
-                      quarter === 3 &&
-                        "top-[calc(var(--week-cells-height)/4*3)]"
-                    )}
-                    onClick={() => {
-                      const startTime = new Date(currentDate)
-
-                      startTime.setHours(hourValue)
-                      startTime.setMinutes(quarter * 15)
-                      onEventCreate(startTime)
-                    }}
-                  />
-                ))}
+                {index > 0 && (
+                  <span className="absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
+                    {format(hour, "HH:mm")}
+                  </span>
+                )}
               </div>
-            )
-          })}
+            ))}
+          </div>
+
+          <div className="relative">
+            {positionedEvents.map((positionedEvent) => (
+              <div
+                key={positionedEvent.event.id}
+                className="absolute z-10 px-0.5"
+                style={{
+                  top: `${positionedEvent.top}px`,
+                  height: `${positionedEvent.height}px`,
+                  left: `${positionedEvent.left * 100}%`,
+                  width: `${positionedEvent.width * 100}%`,
+                  zIndex: positionedEvent.zIndex,
+                }}
+              >
+                <div className="h-full w-full">
+                  <EventItem
+                    event={positionedEvent.event}
+                    view="day"
+                    onClick={(e) => handleEventClick(positionedEvent.event, e)}
+                    showTime
+                  />
+                </div>
+              </div>
+            ))}
+
+            {currentTimeVisible && (
+              <div
+                className="pointer-events-none absolute right-0 left-0 z-20"
+                style={{ top: `${currentTimePosition}%` }}
+              >
+                <div className="relative flex items-center">
+                  <div className="absolute -left-1 h-2.5 w-2.5 rounded-full bg-red-600 shadow-[0_0_0_2px_rgba(255,255,255,0.9)]"></div>
+                  <div className="h-[3px] w-full bg-red-600"></div>
+                </div>
+              </div>
+            )}
+
+            {hours.map((hour) => {
+              const hourValue = getHours(hour)
+
+              return (
+                <div
+                  key={hour.toString()}
+                  className="relative h-[var(--week-cells-height)] border-b border-border/70 last:border-b-0"
+                >
+                  {[0, 1, 2, 3].map((quarter) => (
+                    <CalendarCell
+                      key={`${hour.toString()}-${quarter}`}
+                      time={hourValue + quarter * 0.25}
+                      className={cn(
+                        "absolute h-[calc(var(--week-cells-height)/4)] w-full",
+                        quarter === 0 && "top-0",
+                        quarter === 1 && "top-[calc(var(--week-cells-height)/4)]",
+                        quarter === 2 &&
+                          "top-[calc(var(--week-cells-height)/4*2)]",
+                        quarter === 3 &&
+                          "top-[calc(var(--week-cells-height)/4*3)]"
+                      )}
+                      onClick={() => {
+                        const startTime = new Date(currentDate)
+
+                        startTime.setHours(hourValue)
+                        startTime.setMinutes(quarter * 15)
+                        onEventCreate(startTime)
+                      }}
+                    />
+                  ))}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

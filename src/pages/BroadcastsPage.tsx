@@ -65,7 +65,8 @@ export function BroadcastsPage() {
   const { data, currentSender } = useStruPPI()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [viewMode, setViewMode] = useState<ViewMode>("list")
+  const initialViewMode = searchParams.get("view") === "calendar" ? "calendar" : "list"
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
   const [timeRange, setTimeRange] = useState<TimeRangePreset>("all")
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
@@ -112,10 +113,15 @@ export function BroadcastsPage() {
 
   const calendarEvents = useMemo<CalendarEvent[]>(
     () =>
-      visibleSendungen.map((sendung) => {
+      visibleSendungen.map((sendung, index) => {
         const start = parseDateTime(sendung.termin.start) ?? new Date()
         const end =
           parseDateTime(sendung.termin.ende) ?? new Date(start.getTime())
+
+        const durationMinutes = Math.max(
+          0,
+          Math.round((end.getTime() - start.getTime()) / 60000)
+        )
 
         return {
           id: sendung.sendung_id,
@@ -125,11 +131,30 @@ export function BroadcastsPage() {
               ?._text ?? "",
           start,
           end,
-          allDay: false,
+          allDay: durationMinutes >= 23 * 60,
+          color: ["family", "business", "personal", "holiday", "etc"][
+            index % 5
+          ] as CalendarEvent["color"],
         }
       }),
     [visibleSendungen]
   )
+
+  useEffect(() => {
+    const viewParam = searchParams.get("view")
+    const next = new URLSearchParams(searchParams)
+
+    if (viewMode === "calendar" && viewParam !== "calendar") {
+      next.set("view", "calendar")
+      setSearchParams(next, { replace: true })
+      return
+    }
+
+    if (viewMode === "list" && viewParam !== null) {
+      next.delete("view")
+      setSearchParams(next, { replace: true })
+    }
+  }, [searchParams, setSearchParams, viewMode])
 
   useEffect(() => {
     if (selectedAblauf && !requestedAblauf) {

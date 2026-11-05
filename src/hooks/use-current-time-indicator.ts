@@ -15,10 +15,11 @@ export function useCurrentTimeIndicator(
   useEffect(() => {
     const calculateTimePosition = () => {
       const now = new Date()
-      const totalMinutes = (now.getHours() - startHour) * 60 + now.getMinutes()
-      const dayEndMinutes = (endHour - startHour) * 60
+      const nowMinutes = now.getHours() * 60 + now.getMinutes()
+      const startMinutes = startHour * 60
+      const totalMinutes = (endHour - startHour) * 60
 
-      const position = (totalMinutes / dayEndMinutes) * 100
+      const position = totalMinutes > 0 ? ((nowMinutes - startMinutes) / totalMinutes) * 100 : 0
 
       const isCurrentTimeVisible =
         view === "day"
@@ -28,7 +29,7 @@ export function useCurrentTimeIndicator(
               end: endOfWeek(currentDate, { weekStartsOn: 0 }),
             })
 
-      setCurrentTimePosition(position)
+      setCurrentTimePosition(Math.min(100, Math.max(0, position)))
       setCurrentTimeVisible(isCurrentTimeVisible)
     }
 

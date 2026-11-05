@@ -16,6 +16,7 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns"
+import { de } from "date-fns/locale"
 
 // Component Imports
 import { DayView } from "@/components/calendar-view/content/day-view"
@@ -39,12 +40,12 @@ import {
   ChevronRightIcon,
 } from "lucide-react"
 
-export const EventHeight = 29
+export const EventHeight = 27
 export const EventGap = 4
-export const WeekCellsHeight = 72
+export const WeekCellsHeight = 62
 export const StartHour = 0
 export const EndHour = 24
-export const DefaultStartHour = 9
+export const DefaultStartHour = 8
 
 export type EventColor = "family" | "business" | "personal" | "holiday" | "etc"
 
@@ -233,23 +234,23 @@ const EventCalendar01 = ({
   }, [])
 
   const viewTitle = useMemo(() => {
-    if (view === "month") return format(currentDate, "MMMM yyyy")
+    if (view === "month") return format(currentDate, "MMMM yyyy", { locale: de })
 
     if (view === "week") {
       const start = startOfWeek(currentDate, { weekStartsOn: 0 })
       const end = endOfWeek(currentDate, { weekStartsOn: 0 })
 
       return isSameMonth(start, end)
-        ? format(start, "MMMM yyyy")
-        : `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`
+        ? format(start, "MMMM yyyy", { locale: de })
+        : `${format(start, "MMM", { locale: de })} - ${format(end, "MMM yyyy", { locale: de })}`
     }
 
-    return format(currentDate, "EEE MMMM d, yyyy")
+    return format(currentDate, "EEE MMMM d, yyyy", { locale: de })
   }, [currentDate, view])
 
   return (
     <section className="p-3">
-      <div className="h-[calc(100dvh-2rem)]">
+      <div className="h-[calc(100dvh-18rem)] min-h-[420px]">
         <div
           className={cn("flex flex-col rounded-lg border bg-card", className)}
         >

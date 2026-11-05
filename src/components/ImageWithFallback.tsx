@@ -1,4 +1,3 @@
-import { ImageOff } from "lucide-react"
 import { useState } from "react"
 import type { Link } from "@/types/struppi"
 
@@ -19,8 +18,7 @@ export function ImageWithFallback({
 }: ImageWithFallbackProps) {
   const [hasError, setHasError] = useState(false)
 
-  // Get the first available link
-  const imageUrl = links?.[0]?.link
+  const imageUrl = links?.find((link) => Boolean(link?.link?.trim()))?.link?.trim()
 
   const sizeClasses = {
     sm: heightOnly ? "h-8" : "w-8 h-8",
@@ -29,15 +27,7 @@ export function ImageWithFallback({
   }
 
   if (!imageUrl || hasError) {
-    // show square placeholder when no image (good for logos)
-    const placeholderClasses = `${sizeClasses[size]} ${heightOnly ? "w-auto" : ""}`
-    return (
-      <div
-        className={`flex items-center justify-center rounded-none bg-muted ${placeholderClasses} ${className} ${!imageUrl ? "aspect-square" : ""}`}
-      >
-        <ImageOff className="h-1/2 w-1/2 text-muted-foreground" />
-      </div>
-    )
+    return null
   }
 
   return (
